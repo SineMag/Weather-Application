@@ -1,8 +1,9 @@
-export default function MainSection() {
+import type { PropsWithChildren } from 'react'
+
+export default function MainSection({ children }: PropsWithChildren) {
   return (
     <div>
-      <h1>Weather</h1>
-      <p>Weather information for your current location will appear here.</p>
+      {children}
     </div>
   )
 }

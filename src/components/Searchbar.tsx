@@ -1,5 +1,4 @@
 import { useState } from "react";
-import WeatherCard from "./WeatherCard";
 
 type ForecastItem = {
   dt?: number;
@@ -21,24 +20,28 @@ type ForecastResponse = {
   list?: ForecastItem[];
 };
 
-export default function Searchbar() {
+type DailyPayload = {
+  city?: { name?: string; country?: string };
+  days?: Array<{
+    date?: string;
+    temp_min?: number;
+    temp_max?: number;
+    humidity_mean?: number;
+    wind_speed_max?: number;
+    wind_dir?: number;
+    weather_text?: string;
+  }>;
+};
+
+type SearchbarProps = {
+  onDaily?: (payload: DailyPayload) => void;
+};
+
+export default function Searchbar({ onDaily }: SearchbarProps) {
   const [city, setCity] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ForecastResponse | null>(null);
-  const [unit, setUnit] = useState<"metric" | "imperial">("metric"); // default °C
-  const [daily, setDaily] = useState<{
-    city?: { name?: string; country?: string };
-    days?: Array<{
-      date?: string;
-      temp_min?: number;
-      temp_max?: number;
-      humidity_mean?: number;
-      wind_speed_max?: number;
-      wind_dir?: number;
-      weather_text?: string;
-    }>;
-  } | null>(null);
 
   // Simple mapper for Open‑Meteo weather codes → short text
   const codeToText = (code?: number): string | undefined => {
@@ -79,7 +82,7 @@ export default function Searchbar() {
     e.preventDefault();
     setError(null);
     setResult(null);
-    setDaily(null);
+    // consumer (App) will control displayed results
 
     const query = city.trim();
     if (!query) {
@@ -181,7 +184,7 @@ export default function Searchbar() {
         weather_text: codeToText(wcode[i]),
       }));
 
-      setDaily({ city: { name, country }, days });
+      onDaily?.({ city: { name, country }, days });
     } catch (err: any) {
       setError(err?.message || "Failed to fetch weather");
     } finally {
@@ -189,33 +192,7 @@ export default function Searchbar() {
     }
   };
 
-  const windDir = (deg?: number) => {
-    if (typeof deg !== "number") return undefined;
-    const dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
-    return dirs[Math.round(deg / 45) % 8];
-  };
-
-  // conversions..
-  const convertTemp = (t?: number) =>
-    typeof t !== "number"
-      ? "-"
-      : unit === "metric"
-      ? `${t.toFixed(1)} °C`
-      : `${((t * 9) / 5 + 32).toFixed(1)} °F`;
-
-  const convertSpeed = (s?: number) =>
-    typeof s !== "number"
-      ? "-"
-      : unit === "metric"
-      ? `${(s * 3.6).toFixed(1)} km/h`
-      : `${(s * 2.23694).toFixed(1)} mph`;
-
-  const convertPressure = (p?: number) =>
-    typeof p !== "number"
-      ? "-"
-      : unit === "metric"
-      ? `${p.toFixed(0)} hPa`
-      : `${(p * 0.02953).toFixed(2)} inHg`;
+  // local converters not needed here anymore; App handles display
 
   return (
     <div className="topNavSection">
@@ -232,18 +209,6 @@ export default function Searchbar() {
       </form>
 
       {error && <div role="alert">{error}</div>}
-
-      {/* Show daily cards when available */}
-      {daily && (
-        <WeatherCard
-          daily={daily}
-          unit={unit}
-          setUnit={setUnit}
-          convertTemp={convertTemp}
-          convertSpeed={convertSpeed}
-          windDir={windDir}
-        />
-      )}
     </div>
   );
 }

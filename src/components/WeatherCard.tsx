@@ -1,4 +1,5 @@
 import React from 'react'
+import './WeatherCard.css'
 
 type ForecastItem = {
   dt?: number;
@@ -65,21 +66,21 @@ export default function WeatherCard({
           <h2>
             {daily.city?.name}, {daily.city?.country}
           </h2>
-          <button onClick={() => setUnit(unit === 'metric' ? 'imperial' : 'metric')}>
+          <button className='unit-toggle' onClick={() => setUnit(unit === 'metric' ? 'imperial' : 'metric')}>
             Switch to {unit === 'metric' ? '°F / mph' : '°C / km/h'}
           </button>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 16, marginTop: 16 }}>
+          <div className='daily-grid'>
             {daily.days?.map((d, idx) => (
-              <div key={idx} style={{ border: '1px solid #ddd', borderRadius: 12, padding: 16, background: '#ffffff0d' }}>
-                <div style={{ fontWeight: 600, marginBottom: 8 }}>
+              <div key={idx} className='day-card'>
+                <div className='day-title'>
                   {d.date ? new Date(d.date).toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short' }) : '-'}
                 </div>
-                <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>
+                <div className='temps'>
                   {convertTemp?.(d.temp_max)} / {convertTemp?.(d.temp_min)}
                 </div>
-                <div style={{ opacity: 0.9, marginBottom: 8 }}>{d.weather_text || '-'}</div>
-                <div style={{ fontSize: 12, lineHeight: 1.6 }}>
+                <div className='desc'>{d.weather_text || '-'}</div>
+                <div className='meta'>
                   <div>Humidity: {typeof d.humidity_mean === 'number' ? `${d.humidity_mean}%` : '-'}</div>
                   <div>
                     Wind: {convertSpeed?.(d.wind_speed_max)} {windDir?.(d.wind_dir)}

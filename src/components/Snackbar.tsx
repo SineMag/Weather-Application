@@ -1,54 +1,46 @@
-// import * as React from 'react';
-// import Button from '@mui/material/Button';
-// import Snackbar from '@mui/material/Snackbar';
-// import type { SnackbarCloseReason } from '@mui/material/Snackbar';
-// import IconButton from '@mui/material/IconButton';
-// import CloseIcon from '@mui/icons-material/Close';
+import { useEffect, useState } from 'react'
 
-// export default function SimpleSnackbar() {
-//   const [open, setOpen] = React.useState(false);
+type SnackbarProps = {
+  message?: string
+  type?: 'info' | 'warning' | 'error' | 'success'
+  autoHideMs?: number
+}
 
-//   const handleClick = () => {
-//     setOpen(true);
-//   };
+export default function Snackbar({ message, type = 'info', autoHideMs = 5000 }: SnackbarProps) {
+  const [open, setOpen] = useState(Boolean(message))
+  useEffect(() => {
+    setOpen(Boolean(message))
+    if (message && autoHideMs > 0) {
+      const id = setTimeout(() => setOpen(false), autoHideMs)
+      return () => clearTimeout(id)
+    }
+  }, [message, autoHideMs])
 
-//   const handleClose = (
-//     event: React.SyntheticEvent | Event,
-//     reason?: SnackbarCloseReason,
-//   ) => {
-//     if (reason === 'clickaway') {
-//       return;
-//     }
+  if (!open || !message) return null
 
-//     setOpen(false);
-//   };
+  const bg =
+    type === 'error' ? '#fee2e2' :
+    type === 'warning' ? '#fef3c7' :
+    type === 'success' ? '#dcfce7' : '#e0f2fe'
+  const color = '#111'
+  const border =
+    type === 'error' ? '#fecaca' :
+    type === 'warning' ? '#fde68a' :
+    type === 'success' ? '#bbf7d0' : '#bae6fd'
 
-//   const action = (
-//     <React.Fragment>
-//       <Button color="secondary" size="small" onClick={handleClose}>
-//         UNDO
-//       </Button>
-//       <IconButton
-//         size="small"
-//         aria-label="close"
-//         color="inherit"
-//         onClick={handleClose}
-//       >
-//         <CloseIcon fontSize="small" />
-//       </IconButton>
-//     </React.Fragment>
-//   );
-
-//   return (
-//     <div>
-//       <Button onClick={handleClick}>Open Snackbar</Button>
-//       <Snackbar
-//         open={open}
-//         autoHideDuration={6000}
-//         onClose={handleClose}
-//         message="Note archived"
-//         action={action}
-//       />
-//     </div>
-//   );
-// }
+  return (
+    <div style={{
+      background: bg,
+      color,
+      border: `1px solid ${border}`,
+      borderRadius: 10,
+      padding: '10px 12px',
+      marginBottom: 12,
+      boxShadow: '0 6px 16px rgba(0,0,0,0.08)'
+    }}>
+      {message}
+    </div>
+  )
+}
+// shown whenever user coorectly inputs a valid city name for weather
+// alerts user to input correct city name whenver its invalid

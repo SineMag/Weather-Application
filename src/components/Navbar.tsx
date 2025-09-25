@@ -69,6 +69,7 @@ export default function Navbar({ activeItem, onNavigate }: NavbarProps) {
                 }}
               >
                 <IconComponent size={58} />
+                {/* City label intentionally not shown here; it will appear inside content cards */}
               </div>
             );
           })}
