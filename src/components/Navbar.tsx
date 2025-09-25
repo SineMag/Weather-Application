@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { TiWeatherPartlySunny } from "react-icons/ti";
 import { TiHomeOutline } from "react-icons/ti";
 import { FaLocationDot } from "react-icons/fa6";
@@ -6,23 +7,99 @@ import { GrNotes } from "react-icons/gr";
 import { FaUserAlt } from "react-icons/fa";
 import { IoSettings } from "react-icons/io5";
 
-export default function Navbar() {
+type NavItem = 'home' | 'location' | 'map' | 'notes' | 'profile' | 'settings';
+
+interface NavbarProps {
+  activeItem: NavItem;
+  onNavigate?: (section: NavItem) => void;
+}
+
+export default function Navbar({ activeItem, onNavigate }: NavbarProps) {
+  const handleNavClick = useCallback((item: NavItem) => {
+    onNavigate?.(item);
+  }, [onNavigate]);
+
+  const navItems = [
+    { id: 'home' as NavItem, icon: TiHomeOutline, label: 'Home', section: 'mid' },
+    { id: 'location' as NavItem, icon: FaLocationDot, label: 'Current Location', section: 'mid' },
+    { id: 'map' as NavItem, icon: CiMap, label: 'Weather Map', section: 'mid' },
+    { id: 'notes' as NavItem, icon: GrNotes, label: 'Weather Notes', section: 'mid' },
+    { id: 'profile' as NavItem, icon: FaUserAlt, label: 'Profile', section: 'bottom' },
+    { id: 'settings' as NavItem, icon: IoSettings, label: 'Settings', section: 'bottom' },
+  ];
+
   return (
-    <div className="navSection">
-      <div className="logo" style={{cursor:'pointer'}}>
+    <nav className="navSection" aria-label="Primary">
+      <div
+        className="logo"
+        onClick={() => handleNavClick('home')}
+        role="button"
+        tabIndex={0}
+        aria-label="Home"
+        aria-current={activeItem === 'home' ? 'page' : undefined}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            handleNavClick('home');
+          }
+        }}
+      >
         <TiWeatherPartlySunny size={58} />
         <h3>Weather</h3>
       </div>
-      <div className="midNav" style={{cursor:'pointer'}}>
-        <TiHomeOutline size={58} />
-        <FaLocationDot size={58} />
-        <CiMap size={58} />
-        <GrNotes size={58} />
+      
+      <div className="midNav">
+        {navItems
+          .filter(item => item.section === 'mid')
+          .map(item => {
+            const IconComponent = item.icon;
+            return (
+              <div
+                key={item.id}
+                className={`nav-item ${activeItem === item.id ? 'active' : ''}`}
+                onClick={() => handleNavClick(item.id)}
+                title={item.label}
+                role="button"
+                tabIndex={0}
+                aria-label={item.label}
+                aria-current={activeItem === item.id ? 'page' : undefined}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleNavClick(item.id);
+                  }
+                }}
+              >
+                <IconComponent size={58} />
+              </div>
+            );
+          })}
       </div>
-      <div className="bottomNav" style={{cursor:'pointer'}}>
-        <FaUserAlt size={58} />
-        <IoSettings size={58} />
+      
+      <div className="bottomNav">
+        {navItems
+          .filter(item => item.section === 'bottom')
+          .map(item => {
+            const IconComponent = item.icon;
+            return (
+              <div
+                key={item.id}
+                className={`nav-item ${activeItem === item.id ? 'active' : ''}`}
+                onClick={() => handleNavClick(item.id)}
+                title={item.label}
+                role="button"
+                tabIndex={0}
+                aria-label={item.label}
+                aria-current={activeItem === item.id ? 'page' : undefined}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleNavClick(item.id);
+                  }
+                }}
+              >
+                <IconComponent size={58} />
+              </div>
+            );
+          })}
       </div>
-    </div>
+    </nav>
   );
 }
