@@ -185,10 +185,9 @@ body,
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.topNavBar h1 {
-  color: #333;
-  font-size: 24px;
-  font-weight: 600;
+/* Make the left content (search) flex to take available space */
+.topNavBar > div:first-child {
+  flex: 1;
 }
 
 .content-area {
@@ -336,4 +335,12 @@ body,
 
 .result-desc {
   color: #444;
+}
+
+
+.topNavSection {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
 }

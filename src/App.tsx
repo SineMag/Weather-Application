@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
+import { FaLocationDot } from "react-icons/fa6";
+import { FaUser } from "react-icons/fa";
 import "./App.css";
 import Navbar from "./components/Navbar";
 import MainSection from "./layout/MainSection";
 import Searchbar from "./components/Searchbar";
+import WeatherCard from "./components/WeatherCard";
 
 type NavItem = "home" | "location" | "map" | "notes" | "profile" | "settings";
 
@@ -90,7 +93,38 @@ function App() {
               {/* searchbar using city names ..search for weather */}
               <Searchbar />
             </div>
-            <div className="topRightNav"></div>
+            <div
+              className="topRightNav"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 16,
+                flexWrap: "nowrap",
+              }}
+            >
+              <div
+                className="topRightItem"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <FaLocationDot size={20} />
+              </div>
+              <div
+                className="topRightItem"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <FaUser size={20} />
+              </div>
+            </div>
           </div>
 
           {/* Dynamic content based on selected navigation */}
@@ -111,6 +145,9 @@ function App() {
               </div>
             </>
           )}
+          <div>
+            <WeatherCard />
+          </div>
         </main>
       </div>
     </>

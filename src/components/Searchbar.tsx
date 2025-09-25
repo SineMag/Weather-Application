@@ -1,116 +1,132 @@
-import { useState } from 'react'
+import { useState } from "react";
+import WeatherCard from "./WeatherCard";
 
 type ForecastItem = {
-  dt?: number
-  dt_txt?: string
+  dt?: number;
+  dt_txt?: string;
   main?: {
-    temp?: number
-    feels_like?: number
-    temp_min?: number
-    temp_max?: number
-    pressure?: number
-    humidity?: number
-  }
-  wind?: { speed?: number; deg?: number }
-  weather?: { description?: string }[]
-}
+    temp?: number;
+    feels_like?: number;
+    temp_min?: number;
+    temp_max?: number;
+    pressure?: number;
+    humidity?: number;
+  };
+  wind?: { speed?: number; deg?: number };
+  weather?: { description?: string }[];
+};
 
 type ForecastResponse = {
-  city?: { name?: string; country?: string }
-  list?: ForecastItem[]
-}
+  city?: { name?: string; country?: string };
+  list?: ForecastItem[];
+};
 
 export default function Searchbar() {
-  const [city, setCity] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [result, setResult] = useState<ForecastResponse | null>(null)
-  const [unit, setUnit] = useState<'metric' | 'imperial'>('metric') // default °C
+  const [city, setCity] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<ForecastResponse | null>(null);
+  const [unit, setUnit] = useState<"metric" | "imperial">("metric"); // default °C
+  const [daily, setDaily] = useState<{
+    city?: { name?: string; country?: string };
+    days?: Array<{
+      date?: string;
+      temp_min?: number;
+      temp_max?: number;
+      humidity_mean?: number;
+      wind_speed_max?: number;
+      wind_dir?: number;
+      weather_text?: string;
+    }>;
+  } | null>(null);
 
   // Simple mapper for Open‑Meteo weather codes → short text
   const codeToText = (code?: number): string | undefined => {
     const map: Record<number, string> = {
-      0: 'Clear sky',
-      1: 'Mainly clear',
-      2: 'Partly cloudy',
-      3: 'Overcast',
-      45: 'Fog',
-      48: 'Depositing rime fog',
-      51: 'Light drizzle',
-      53: 'Moderate drizzle',
-      55: 'Dense drizzle',
-      56: 'Light freezing drizzle',
-      57: 'Dense freezing drizzle',
-      61: 'Slight rain',
-      63: 'Rain',
-      65: 'Heavy rain',
-      66: 'Light freezing rain',
-      67: 'Heavy freezing rain',
-      71: 'Slight snow',
-      73: 'Snow',
-      75: 'Heavy snow',
-      77: 'Snow grains',
-      80: 'Rain showers',
-      81: 'Heavy rain showers',
-      82: 'Violent rain showers',
-      85: 'Snow showers',
-      86: 'Heavy snow showers',
-      95: 'Thunderstorm',
-      96: 'Thunderstorm with hail',
-      99: 'Thunderstorm with heavy hail',
-    }
-    return typeof code === 'number' ? map[code] || '—' : undefined
-  }
+      0: "Clear sky",
+      1: "Mainly clear",
+      2: "Partly cloudy",
+      3: "Overcast",
+      45: "Fog",
+      48: "Depositing rime fog",
+      51: "Light drizzle",
+      53: "Moderate drizzle",
+      55: "Dense drizzle",
+      56: "Light freezing drizzle",
+      57: "Dense freezing drizzle",
+      61: "Slight rain",
+      63: "Rain",
+      65: "Heavy rain",
+      66: "Light freezing rain",
+      67: "Heavy freezing rain",
+      71: "Slight snow",
+      73: "Snow",
+      75: "Heavy snow",
+      77: "Snow grains",
+      80: "Rain showers",
+      81: "Heavy rain showers",
+      82: "Violent rain showers",
+      85: "Snow showers",
+      86: "Heavy snow showers",
+      95: "Thunderstorm",
+      96: "Thunderstorm with hail",
+      99: "Thunderstorm with heavy hail",
+    };
+    return typeof code === "number" ? map[code] || "—" : undefined;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setResult(null)
+    e.preventDefault();
+    setError(null);
+    setResult(null);
+    setDaily(null);
 
-    const query = city.trim()
+    const query = city.trim();
     if (!query) {
-      setError('Please enter a city name.')
-      return
+      setError("Please enter a city name.");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     try {
       // 🔹 1) Geocode city name → lat/lon (Open‑Meteo geocoding API)
       const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
         query
-      )}&count=1&language=en&format=json`
-      const geoRes = await fetch(geoUrl)
-      const geo = await geoRes.json()
-      const place = geo?.results?.[0]
+      )}&count=1&language=en&format=json`;
+      const geoRes = await fetch(geoUrl);
+      const geo = await geoRes.json();
+      const place = geo?.results?.[0];
       if (!place) {
-        throw new Error('City not found. Try another city name.')
+        throw new Error("City not found. Try another city name.");
       }
 
-      const { latitude, longitude, name, country } = place
+      const { latitude, longitude, name, country } = place;
 
-      // 🔹 2) Fetch 3‑day hourly forecast with units matching your converters
-      const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
+      // 🔹 2a) Fetch 3‑day hourly forecast with units matching your converters (optional list)
+      const forecastUrl =
+        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
         `&hourly=temperature_2m,apparent_temperature,relative_humidity_2m,pressure_msl,wind_speed_10m,wind_direction_10m,weather_code` +
-        `&forecast_days=3&timezone=auto&wind_speed_unit=ms`
-      const res = await fetch(forecastUrl)
-      const data = await res.json()
+        `&forecast_days=3&timezone=auto&wind_speed_unit=ms`;
+      const res = await fetch(forecastUrl);
+      const data = await res.json();
 
       if (!res.ok) {
-        const providerMsg = data?.reason || data?.error || 'Open‑Meteo request failed'
-        throw new Error(`${providerMsg}: ${res.status}`)
+        const providerMsg =
+          data?.reason || data?.error || "Open‑Meteo request failed";
+        throw new Error(`${providerMsg}: ${res.status}`);
       }
 
-      const times: string[] = data?.hourly?.time || []
-      const temp: number[] = data?.hourly?.temperature_2m || []
-      const feels: number[] = data?.hourly?.apparent_temperature || []
-      const rh: number[] = data?.hourly?.relative_humidity_2m || []
-      const p: number[] = data?.hourly?.pressure_msl || []
-      const ws: number[] = data?.hourly?.wind_speed_10m || []
-      const wd: number[] = data?.hourly?.wind_direction_10m || []
-      const wc: number[] = data?.hourly?.weather_code || []
+      const times: string[] = data?.hourly?.time || [];
+      const temp: number[] = data?.hourly?.temperature_2m || [];
+      const feels: number[] = data?.hourly?.apparent_temperature || [];
+      const rh: number[] = data?.hourly?.relative_humidity_2m || [];
+      const p: number[] = data?.hourly?.pressure_msl || [];
+      const ws: number[] = data?.hourly?.wind_speed_10m || [];
+      const wd: number[] = data?.hourly?.wind_direction_10m || [];
+      const wc: number[] = data?.hourly?.weather_code || [];
 
       // Downsample to every 2 hours by taking every 2nd index
-      const entries = times.map((t, i) => ({ t, i }))
+      const entries = times.map((t, i) => ({ t, i }));
       const list: ForecastItem[] = entries
         .filter(({ i }) => i % 2 === 0)
         .map(({ t, i }) => ({
@@ -119,58 +135,90 @@ export default function Searchbar() {
           main: {
             temp: temp[i],
             feels_like: feels[i],
-            temp_min: undefined, // Not provided per-hour; keeping undefined
+            temp_min: undefined,
             temp_max: undefined,
             pressure: p[i],
             humidity: rh[i],
           },
           wind: { speed: ws[i], deg: wd[i] },
           weather: [{ description: codeToText(wc[i]) }],
-        }))
+        }));
 
       const transformed: ForecastResponse = {
         city: { name, country },
         list,
+      };
+
+      setResult(transformed);
+
+      // 🔹 2b) Fetch daily forecast: yesterday + next 7 days
+      const dailyUrl =
+        `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
+        `&daily=temperature_2m_max,temperature_2m_min,relative_humidity_2m_mean,wind_speed_10m_max,wind_direction_10m_dominant,weather_code` +
+        `&forecast_days=7&past_days=1&timezone=auto&wind_speed_unit=ms`;
+      const dRes = await fetch(dailyUrl);
+      const d = await dRes.json();
+      if (!dRes.ok) {
+        const providerMsg = d?.reason || d?.error || "Open‑Meteo daily request failed";
+        throw new Error(`${providerMsg}: ${dRes.status}`);
       }
 
-      setResult(transformed)
+      const dates: string[] = d?.daily?.time || [];
+      const tmax: number[] = d?.daily?.temperature_2m_max || [];
+      const tmin: number[] = d?.daily?.temperature_2m_min || [];
+      const rhm: number[] = d?.daily?.relative_humidity_2m_mean || [];
+      const wsMax: number[] = d?.daily?.wind_speed_10m_max || [];
+      const wdDom: number[] = d?.daily?.wind_direction_10m_dominant || [];
+      const wcode: number[] = d?.daily?.weather_code || [];
+
+      const days = dates.map((date: string, i: number) => ({
+        date,
+        temp_min: tmin[i],
+        temp_max: tmax[i],
+        humidity_mean: rhm[i],
+        wind_speed_max: wsMax[i],
+        wind_dir: wdDom[i],
+        weather_text: codeToText(wcode[i]),
+      }));
+
+      setDaily({ city: { name, country }, days });
     } catch (err: any) {
-      setError(err?.message || 'Failed to fetch weather')
+      setError(err?.message || "Failed to fetch weather");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const windDir = (deg?: number) => {
-    if (typeof deg !== 'number') return undefined
-    const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
-    return dirs[Math.round(deg / 45) % 8]
-  }
+    if (typeof deg !== "number") return undefined;
+    const dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+    return dirs[Math.round(deg / 45) % 8];
+  };
 
-  // conversions
+  // conversions..
   const convertTemp = (t?: number) =>
-    typeof t !== 'number'
-      ? '-'
-      : unit === 'metric'
+    typeof t !== "number"
+      ? "-"
+      : unit === "metric"
       ? `${t.toFixed(1)} °C`
-      : `${((t * 9) / 5 + 32).toFixed(1)} °F`
+      : `${((t * 9) / 5 + 32).toFixed(1)} °F`;
 
   const convertSpeed = (s?: number) =>
-    typeof s !== 'number'
-      ? '-'
-      : unit === 'metric'
+    typeof s !== "number"
+      ? "-"
+      : unit === "metric"
       ? `${(s * 3.6).toFixed(1)} km/h`
-      : `${(s * 2.23694).toFixed(1)} mph`
+      : `${(s * 2.23694).toFixed(1)} mph`;
 
   const convertPressure = (p?: number) =>
-    typeof p !== 'number'
-      ? '-'
-      : unit === 'metric'
+    typeof p !== "number"
+      ? "-"
+      : unit === "metric"
       ? `${p.toFixed(0)} hPa`
-      : `${(p * 0.02953).toFixed(2)} inHg`
+      : `${(p * 0.02953).toFixed(2)} inHg`;
 
   return (
-    <div>
+    <div className="topNavSection">
       <form onSubmit={handleSubmit}>
         <input
           type="text"
@@ -179,33 +227,23 @@ export default function Searchbar() {
           onChange={(e) => setCity(e.target.value)}
         />
         <button type="submit" disabled={loading}>
-          {loading ? 'Searching…' : 'Search'}
+          {loading ? "Searching…" : "Search"}
         </button>
       </form>
 
       {error && <div role="alert">{error}</div>}
 
-      {result && (
-        <div>
-          <h2>
-            {result.city?.name}, {result.city?.country}
-          </h2>
-          <button onClick={() => setUnit(unit === 'metric' ? 'imperial' : 'metric')}>
-            Switch to {unit === 'metric' ? '°F / mph' : '°C / km/h'}
-          </button>
-
-          <ul>
-            {result.list?.slice(0, 12).map((item, idx) => (
-              <li key={idx}>
-                <strong>{item.dt_txt}</strong> – {convertTemp(item.main?.temp)} (
-                {item.weather?.[0]?.description}) | Wind: {convertSpeed(item.wind?.speed)}{' '}
-                {windDir(item.wind?.deg)} | Pressure: {convertPressure(item.main?.pressure)} | Humidity:{' '}
-                {item.main?.humidity}%
-              </li>
-            ))}
-          </ul>
-        </div>
+      {/* Show daily cards when available */}
+      {daily && (
+        <WeatherCard
+          daily={daily}
+          unit={unit}
+          setUnit={setUnit}
+          convertTemp={convertTemp}
+          convertSpeed={convertSpeed}
+          windDir={windDir}
+        />
       )}
     </div>
-  )
+  );
 }
