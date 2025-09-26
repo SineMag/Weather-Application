@@ -363,15 +363,3 @@ body,
 .result-temp {
   font-weight: 700;
 }
-
-.result-desc {
-  color: #444;
-}
-
-
-.topNavSection {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  width: 100%;
-}

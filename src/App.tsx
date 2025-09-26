@@ -8,6 +8,7 @@ import Searchbar from "./components/Searchbar";
 import WeatherCard from "./components/WeatherCard";
 import LocationPanel from "./components/LocationPanel";
 import Snackbar from "./components/Snackbar";
+import Settings from "./layout/Settings";
 
 type NavItem = "home" | "location" | "map" | "notes" | "profile" | "settings";
 
@@ -31,8 +32,15 @@ function App() {
       weather_text?: string;
     }>;
   } | null>(null);
-  type SearchItem = { id?: number; city?: string; country?: string; timestamp?: string };
+  type SearchItem = {
+    id?: number;
+    city?: string;
+    country?: string;
+    timestamp?: string;
+  };
   const [previous, setPrevious] = useState<SearchItem[]>([]);
+  const [toastMessage, setToastMessage] = useState<string>('');
+  const [toastType, setToastType] = useState<'info' | 'warning' | 'error' | 'success'>('info');
 
   // Converters and helpers
   const windDir = (deg?: number) => {
@@ -43,35 +51,27 @@ function App() {
 
   // Build an advisory/alert message based on current weather
   const getAlert = () => {
-    const t = (daily?.days?.[0]?.weather_text || '').toLowerCase();
+    const t = (daily?.days?.[0]?.weather_text || "").toLowerCase();
     if (!t) return undefined;
-    if (t.includes('thunder')) return { type: 'warning' as const, message: 'Thunderstorm expected. Stay indoors and avoid open areas.' };
-    if (t.includes('snow')) return { type: 'warning' as const, message: 'Snow conditions expected. Drive carefully and dress warm.' };
-    if (t.includes('rain') || t.includes('drizzle') || t.includes('shower')) return { type: 'info' as const, message: 'Rainy conditions. Carry an umbrella.' };
-    if (t.includes('wind')) return { type: 'info' as const, message: 'Windy conditions. Secure loose items outdoors.' };
+    if (t.includes("thunder"))
+      return { type: "warning" as const, message: "Thunderstorm expected. Stay indoors and avoid open areas." };
+    if (t.includes("snow"))
+      return { type: "warning" as const, message: "Snow conditions expected. Drive carefully and dress warm." };
+    if (t.includes("rain") || t.includes("drizzle") || t.includes("shower"))
+      return { type: "info" as const, message: "Rainy conditions. Carry an umbrella." };
+    if (t.includes("wind"))
+      return { type: "info" as const, message: "Windy conditions. Secure loose items outdoors." };
     return undefined;
   };
 
   const convertTemp = (t?: number) =>
-    typeof t !== "number"
-      ? "-"
-      : unit === "metric"
-      ? `${t.toFixed(1)} °C`
-      : `${((t * 9) / 5 + 32).toFixed(1)} °F`;
+    typeof t !== "number" ? "-" : unit === "metric" ? `${t.toFixed(1)} °C` : `${((t * 9) / 5 + 32).toFixed(1)} °F`;
 
   const convertSpeed = (s?: number) =>
-    typeof s !== "number"
-      ? "-"
-      : unit === "metric"
-      ? `${(s * 3.6).toFixed(1)} km/h`
-      : `${(s * 2.23694).toFixed(1)} mph`;
+    typeof s !== "number" ? "-" : unit === "metric" ? `${(s * 3.6).toFixed(1)} km/h` : `${(s * 2.23694).toFixed(1)} mph`;
 
   const convertPressure = (p?: number) =>
-    typeof p !== "number"
-      ? "-"
-      : unit === "metric"
-      ? `${p.toFixed(0)} hPa`
-      : `${(p * 0.02953).toFixed(2)} inHg`;
+    typeof p !== "number" ? "-" : unit === "metric" ? `${p.toFixed(0)} hPa` : `${(p * 0.02953).toFixed(2)} inHg`;
 
   useEffect(() => {
     localStorage.setItem("activeSection", currentSection);
@@ -82,26 +82,25 @@ function App() {
     const API = "http://localhost:3001/searches";
     fetch(API)
       .then((r) => (r.ok ? r.json() : []))
-      .then((rows) => Array.isArray(rows) ? setPrevious(rows) : setPrevious([]))
+      .then((rows) => (Array.isArray(rows) ? setPrevious(rows) : setPrevious([])))
       .catch(() => setPrevious([]));
   }, []);
 
   const handleNavigation = (section: NavItem) => {
     setCurrentSection(section);
     console.log(`Navigated to: ${section}`);
-    // Here you can add logic to show different content based on the selected section
   };
 
   // Pick a background class for the GIF wrapper based on weather text
   const getBgClass = (text?: string) => {
-    const t = (text || '').toLowerCase();
-    if (t.includes('thunder')) return 'storm';
-    if (t.includes('snow')) return 'snow';
-    if (t.includes('wind')) return 'windy';
-    if (t.includes('rain') || t.includes('drizzle') || t.includes('shower')) return 'rain';
-    if (t.includes('clear') || t.includes('sun')) return 'sunny';
-    if (t.includes('cloud')) return 'cloudy';
-    return 'cloudy';
+    const t = (text || "").toLowerCase();
+    if (t.includes("thunder")) return "storm";
+    if (t.includes("snow")) return "snow";
+    if (t.includes("wind")) return "windy";
+    if (t.includes("rain") || t.includes("drizzle") || t.includes("shower")) return "rain";
+    if (t.includes("clear") || t.includes("sun")) return "sunny";
+    if (t.includes("cloud")) return "cloudy";
+    return "cloudy";
   };
 
   const renderMainContent = () => {
@@ -112,7 +111,6 @@ function App() {
             <MainSection>
               {daily && (
                 <div className={`weather-bg ${getBgClass(daily?.days?.[0]?.weather_text)}`}>
-                  {/* Alert banner */}
                   {getAlert() && (
                     <div className="alert-wrapper">
                       <Snackbar message={getAlert()!.message} type={getAlert()!.type} />
@@ -137,7 +135,6 @@ function App() {
         return (
           <div className="location-content">
             <div className={`weather-bg ${getBgClass(daily?.days?.[0]?.weather_text)}`}>
-              {/* Alert banner */}
               {getAlert() && (
                 <div className="alert-wrapper">
                   <Snackbar message={getAlert()!.message} type={getAlert()!.type} />
@@ -180,8 +177,7 @@ function App() {
       case "settings":
         return (
           <div className="settings-content">
-            <h2>Settings</h2>
-            <p>Configure your weather application settings.</p>
+            <Settings onNotify={(msg, type = 'info') => { setToastType(type); setToastMessage(msg); }} />
           </div>
         );
       default:
@@ -229,40 +225,19 @@ function App() {
                 }}
               />
             </div>
-            <div
-              className="topRightNav"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 16,
-                flexWrap: "nowrap",
-              }}
-            >
-              <div
-                className="topRightItem"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 8,
-                  whiteSpace: "nowrap",
-                }}
-              >
+            <div className="topRightNav" style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "nowrap" }}>
+              <div className="topRightItem" style={{ display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap", cursor: "pointer" }}>
                 <FaLocationDot size={20} />
               </div>
-              <div
-                className="topRightItem"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 8,
-                  whiteSpace: "nowrap",
-                }}
-              >
+              <div className="topRightItem" style={{ display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap", cursor: "pointer" }}>
                 <FaUser size={20} />
               </div>
             </div>
           </div>
-
+          {/* Global snackbar */}
+          <div style={{ position: 'sticky', top: 16, zIndex: 10 }}>
+            <Snackbar message={toastMessage} type={toastType} autoHideMs={3000} />
+          </div>
           {/* Dynamic content based on selected navigation */}
           <div className="content-area">{renderMainContent()}</div>
         </main>
