@@ -1,48 +1,78 @@
 import { useEffect, useState } from "react";
-import { FaLocationDot } from "react-icons/fa6";
 import { FaUser } from "react-icons/fa";
 import "./App.css";
 import Navbar from "./components/Navbar";
 import MainSection from "./layout/MainSection";
-import Searchbar from "./components/Searchbar";
 import WeatherCard from "./components/WeatherCard";
 import LocationPanel from "./components/LocationPanel";
 import Snackbar from "./components/Snackbar";
 import Settings from "./layout/Settings";
 import Error404Page from "./layout/Error404Page";
+import Searchbar from "./components/Searchbar";
+import Profile from "./layout/Profile";
+import type { DailyPayload } from "./components/LocationPanel";
+ 
 
 type NavItem = "home" | "location" | "map" | "notes" | "profile" | "settings";
 
 function App() {
   // Minimal 404 handling: since we don't use a router, any non-root path is treated as 404
-  if (typeof window !== 'undefined' && window.location.pathname !== '/') {
-    return <Error404Page />;
-  }
-  const [currentSection, setCurrentSection] = useState<NavItem>(() => {
-    const stored = localStorage.getItem("activeSection");
-    return (stored as NavItem) || "home";
-  });
-
-  // Lifted weather state
-  const [unit, setUnit] = useState<"metric" | "imperial">("metric");
-  const [daily, setDaily] = useState<{
-    city?: { name?: string; country?: string };
-    days?: Array<{
-      date?: string;
-      temp_min?: number;
-      temp_max?: number;
-      humidity_mean?: number;
-      wind_speed_max?: number;
-      wind_dir?: number;
-      weather_text?: string;
-    }>;
-  } | null>(null);
+  // Define types and initialize core state
   type SearchItem = {
     id?: number;
     city?: string;
     country?: string;
     timestamp?: string;
     favorite?: boolean;
+    weather?: any;
+  };
+
+  const [unit, setUnit] = useState<'metric' | 'imperial'>('metric');
+  const [currentSection, setCurrentSection] = useState<NavItem>((localStorage.getItem('activeSection') as NavItem) || 'home');
+  const [daily, setDaily] = useState<DailyPayload>(null);
+  
+
+  // Helper: add from current daily payload
+  const addSavedLocationFromDaily = async () => {
+    const city = daily?.city?.name;
+    const country = daily?.city?.country;
+    if (!city) {
+      setToastType('warning');
+      setToastMessage('No current location to save');
+      return;
+    }
+    try {
+      // Save a snapshot in json-server (searches)
+      const API = "http://localhost:3001/searches";
+      const body = {
+        city,
+        country,
+        timestamp: new Date().toISOString(),
+        favorite: false,
+        weather: daily?.days || [],
+      };
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const saved = await res.json();
+      if (res.ok) {
+        // reflect in savedEntries (menu list)
+        setSavedEntries((prev) => [saved, ...prev]);
+        // also reflect in `previous` because the menu prefers this list
+        setPrevious((p) => [saved, ...p]);
+        // refresh from server to stay consistent
+        try { await refreshSavedEntries(); } catch {}
+        setToastType('success');
+        setToastMessage('Saved current location');
+      } else {
+        throw new Error('Failed to save');
+      }
+    } catch (e) {
+      setToastType('error');
+      setToastMessage('Failed to save current location');
+    }
   };
 
   // Clear all previous searches
@@ -60,28 +90,7 @@ function App() {
     }
   };
 
-  // Saved locations handlers
-  const addSavedLocation = (loc?: { city?: string; country?: string }) => {
-    if (!loc?.city) return;
-    setSaved((prev) => {
-      const next = [...prev.filter((s) => s.city !== loc.city || s.country !== loc.country), { city: loc.city, country: loc.country }];
-      localStorage.setItem('saved_locations', JSON.stringify(next));
-      setToastType('success');
-      setToastMessage('Saved location');
-      return next;
-    });
-  };
-
-  const removeSavedLocation = (loc?: { city?: string; country?: string }) => {
-    if (!loc?.city) return;
-    setSaved((prev) => {
-      const next = prev.filter((s) => !(s.city === loc.city && s.country === loc.country));
-      localStorage.setItem('saved_locations', JSON.stringify(next));
-      setToastType('info');
-      setToastMessage('Removed saved location');
-      return next;
-    });
-  };
+  
   const [previous, setPrevious] = useState<SearchItem[]>([]);
   const [toastMessage, setToastMessage] = useState<string>('');
   const [toastType, setToastType] = useState<'info' | 'warning' | 'error' | 'success'>('info');
@@ -218,9 +227,7 @@ function App() {
                     onDeleteSearch={deleteSearch}
                     onToggleFavorite={toggleFavorite}
                     onClearAll={clearAllSearches}
-                    saved={saved}
-                    onAddSaved={() => addSavedLocation(daily?.city)}
-                    onRemoveSaved={(loc) => removeSavedLocation(loc)}
+                    showPrevious={false}
                   />
                 </div>
               )}
@@ -248,9 +255,7 @@ function App() {
                 onDeleteSearch={deleteSearch}
                 onToggleFavorite={toggleFavorite}
                 onClearAll={clearAllSearches}
-                saved={saved}
-                onAddSaved={() => addSavedLocation(daily?.city)}
-                onRemoveSaved={(loc) => removeSavedLocation(loc)}
+                showPrevious={false}
               />
             </div>
           </div>
@@ -272,8 +277,11 @@ function App() {
       case "profile":
         return (
           <div className="profile-content">
-            <h2>User Profile</h2>
-            <p>Manage your profile settings and preferences.</p>
+            <Profile
+              unit={unit}
+              setUnit={setUnit}
+              onNotify={(msg, type = 'info') => { setToastType(type); setToastMessage(msg); }}
+            />
           </div>
         );
       case "settings":
@@ -306,28 +314,20 @@ function App() {
               <Searchbar
                 onDaily={async (payload) => {
                   setDaily(payload);
-                  // persist to json-server
-                  try {
-                    const API = "http://localhost:3001/searches";
-                    const body = {
-                      city: payload?.city?.name,
-                      country: payload?.city?.country,
-                      timestamp: new Date().toISOString(),
-                    };
-                    const res = await fetch(API, {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(body),
-                    });
-                    const saved = await res.json();
-                    if (res.ok) setPrevious((p) => [saved, ...p].slice(0, 20));
-                  } catch (_) {
-                    // ignore persistence errors
-                  }
                 }}
               />
             </div>
-          
+            <div className="topRightNav" style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "nowrap", position: 'relative' }}>
+              <div
+                className="topRightItem"
+                style={{ display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap", cursor: "pointer" }}
+                onClick={() => setCurrentSection('profile')}
+                aria-label="User profile"
+                title="User profile"
+              >
+                <FaUser size={20} />
+              </div>
+            </div>
           </div>
           {/* Global snackbar */}
           <div style={{ position: 'sticky', top: 16, zIndex: 10 }}>

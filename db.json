@@ -1,3 +1,166 @@
 {
-  "searches": []
+  "searches": [
+    {
+      "id": "98eb",
+      "city": "Estcourt",
+      "country": "South Africa",
+      "timestamp": "2025-09-26T09:21:06.700Z",
+      "favorite": false,
+      "weather": [
+        {
+          "date": "2025-09-25",
+          "temp_min": 8.5,
+          "temp_max": 14.8,
+          "humidity_mean": 82,
+          "wind_speed_max": 2.4,
+          "wind_dir": 34,
+          "weather_text": "Overcast"
+        },
+        {
+          "date": "2025-09-26",
+          "temp_min": 7.1,
+          "temp_max": 21,
+          "humidity_mean": 77,
+          "wind_speed_max": 3.55,
+          "wind_dir": 85,
+          "weather_text": "Partly cloudy"
+        },
+        {
+          "date": "2025-09-27",
+          "temp_min": 10.9,
+          "temp_max": 24.3,
+          "humidity_mean": 76,
+          "wind_speed_max": 4.53,
+          "wind_dir": 326,
+          "weather_text": "Slight rain"
+        },
+        {
+          "date": "2025-09-28",
+          "temp_min": 12.2,
+          "temp_max": 23.8,
+          "humidity_mean": 79,
+          "wind_speed_max": 5.63,
+          "wind_dir": 104,
+          "weather_text": "Thunderstorm"
+        },
+        {
+          "date": "2025-09-29",
+          "temp_min": 10.6,
+          "temp_max": 15.8,
+          "humidity_mean": 88,
+          "wind_speed_max": 6.44,
+          "wind_dir": 123,
+          "weather_text": "Rain showers"
+        },
+        {
+          "date": "2025-09-30",
+          "temp_min": 11,
+          "temp_max": 14.6,
+          "humidity_mean": 91,
+          "wind_speed_max": 3.71,
+          "wind_dir": 15,
+          "weather_text": "Slight rain"
+        },
+        {
+          "date": "2025-10-01",
+          "temp_min": 10.1,
+          "temp_max": 21.6,
+          "humidity_mean": 84,
+          "wind_speed_max": 4.18,
+          "wind_dir": 344,
+          "weather_text": "Fog"
+        },
+        {
+          "date": "2025-10-02",
+          "temp_min": 10.8,
+          "temp_max": 23.5,
+          "humidity_mean": 78,
+          "wind_speed_max": 5.2,
+          "wind_dir": 74,
+          "weather_text": "Overcast"
+        }
+      ]
+    },
+    {
+      "id": "0efc",
+      "city": "Durban",
+      "country": "South Africa",
+      "timestamp": "2025-09-26T09:22:12.003Z",
+      "favorite": false,
+      "weather": [
+        {
+          "date": "2025-09-25",
+          "temp_min": 11.1,
+          "temp_max": 18.4,
+          "humidity_mean": 76,
+          "wind_speed_max": 3.2,
+          "wind_dir": 188,
+          "weather_text": "Overcast"
+        },
+        {
+          "date": "2025-09-26",
+          "temp_min": 10,
+          "temp_max": 22.7,
+          "humidity_mean": 78,
+          "wind_speed_max": 4.3,
+          "wind_dir": 189,
+          "weather_text": "Fog"
+        },
+        {
+          "date": "2025-09-27",
+          "temp_min": 11.4,
+          "temp_max": 24.7,
+          "humidity_mean": 80,
+          "wind_speed_max": 4.92,
+          "wind_dir": 23,
+          "weather_text": "Fog"
+        },
+        {
+          "date": "2025-09-28",
+          "temp_min": 17.6,
+          "temp_max": 25.2,
+          "humidity_mean": 75,
+          "wind_speed_max": 5.04,
+          "wind_dir": 195,
+          "weather_text": "Rain showers"
+        },
+        {
+          "date": "2025-09-29",
+          "temp_min": 14.8,
+          "temp_max": 17.2,
+          "humidity_mean": 86,
+          "wind_speed_max": 5.44,
+          "wind_dir": 204,
+          "weather_text": "Rain showers"
+        },
+        {
+          "date": "2025-09-30",
+          "temp_min": 14.7,
+          "temp_max": 16.8,
+          "humidity_mean": 89,
+          "wind_speed_max": 3.64,
+          "wind_dir": 31,
+          "weather_text": "Slight rain"
+        },
+        {
+          "date": "2025-10-01",
+          "temp_min": 12.1,
+          "temp_max": 25,
+          "humidity_mean": 81,
+          "wind_speed_max": 6.38,
+          "wind_dir": 34,
+          "weather_text": "Fog"
+        },
+        {
+          "date": "2025-10-02",
+          "temp_min": 13.9,
+          "temp_max": 23.1,
+          "humidity_mean": 82,
+          "wind_speed_max": 6.72,
+          "wind_dir": 193,
+          "weather_text": "Fog"
+        }
+      ]
+    }
+  ]
 }

@@ -35,9 +35,7 @@ type LocationPanelProps = {
   onDeleteSearch?: (id?: number) => void
   onToggleFavorite?: (item: SearchItem) => void
   onClearAll?: () => void
-  saved?: Array<{ city?: string; country?: string }>
-  onAddSaved?: () => void
-  onRemoveSaved?: (loc: { city?: string; country?: string }) => void
+  showPrevious?: boolean
 }
 
 export default function LocationPanel({
@@ -52,9 +50,7 @@ export default function LocationPanel({
   onDeleteSearch,
   onToggleFavorite,
   onClearAll,
-  saved = [],
-  onAddSaved,
-  onRemoveSaved,
+  showPrevious = true,
 }: LocationPanelProps) {
   return (
     <div>
@@ -76,13 +72,6 @@ export default function LocationPanel({
       <div style={{ display: 'flex', gap: 8, marginTop: 12, marginBottom: 12 }}>
         <button
           type="button"
-          onClick={() => onAddSaved?.()}
-          style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e5e7eb', cursor: 'pointer' }}
-        >
-          Save Current Location
-        </button>
-        <button
-          type="button"
           onClick={() => onClearAll?.()}
           style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e5e7eb', cursor: 'pointer' }}
         >
@@ -90,80 +79,58 @@ export default function LocationPanel({
         </button>
       </div>
 
-      {saved?.length ? (
-        <div style={{ marginBottom: 12 }}>
-          <h3>Saved locations</h3>
-          <ul>
-            {saved.map((loc, idx) => (
-              <li key={idx} className="prev-search-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <strong>{loc.city}</strong>{loc.country ? `, ${loc.country}` : ''}
-                </div>
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => onRemoveSaved?.(loc)}
-                    style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid #e5e7eb', cursor: 'pointer' }}
-                  >
-                    Remove
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+      {showPrevious && (
+        <div className="prev-searches">
+          <h3>Previous searches</h3>
+          {previous?.length ? (
+            <ul>
+              {previous.map((s) => (
+                <li key={s.id} className="prev-search-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <strong>{s.city}</strong>{s.country ? `, ${s.country}` : ''}
+                    <span className="prev-search-time" style={{ marginLeft: 8 }}>
+                      {s.timestamp ? new Date(s.timestamp).toLocaleString() : ''}
+                    </span>
+                  </div>
+                  <div style={{ display: 'inline-flex', gap: 8 }}>
+                    <button
+                      type="button"
+                      title={s.favorite ? 'Unfavorite' : 'Mark favorite'}
+                      onClick={() => onToggleFavorite?.(s)}
+                      style={{
+                        padding: '6px 10px',
+                        borderRadius: 8,
+                        border: '1px solid #e5e7eb',
+                        background: s.favorite ? '#fde68a' : '#fff',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {s.favorite ? '★' : '☆'}
+                    </button>
+                    <button
+                      type="button"
+                      title="Delete"
+                      onClick={() => onDeleteSearch?.(s.id)}
+                      style={{
+                        padding: '6px 10px',
+                        borderRadius: 8,
+                        border: '1px solid #fca5a5',
+                        background: '#fee2e2',
+                        color: '#7f1d1d',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No previous searches.</p>
+          )}
         </div>
-      ) : null}
-
-      <div className="prev-searches">
-        <h3>Previous searches</h3>
-        {previous?.length ? (
-          <ul>
-            {previous.map((s) => (
-              <li key={s.id} className="prev-search-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <strong>{s.city}</strong>{s.country ? `, ${s.country}` : ''}
-                  <span className="prev-search-time" style={{ marginLeft: 8 }}>
-                    {s.timestamp ? new Date(s.timestamp).toLocaleString() : ''}
-                  </span>
-                </div>
-                <div style={{ display: 'inline-flex', gap: 8 }}>
-                  <button
-                    type="button"
-                    title={s.favorite ? 'Unfavorite' : 'Mark favorite'}
-                    onClick={() => onToggleFavorite?.(s)}
-                    style={{
-                      padding: '6px 10px',
-                      borderRadius: 8,
-                      border: '1px solid #e5e7eb',
-                      background: s.favorite ? '#fde68a' : '#fff',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {s.favorite ? '★' : '☆'}
-                  </button>
-                  <button
-                    type="button"
-                    title="Delete"
-                    onClick={() => onDeleteSearch?.(s.id)}
-                    style={{
-                      padding: '6px 10px',
-                      borderRadius: 8,
-                      border: '1px solid #fca5a5',
-                      background: '#fee2e2',
-                      color: '#7f1d1d',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No previous searches.</p>
-        )}
-      </div>
+      )}
     </div>
   )
 }

@@ -355,11 +355,65 @@ body,
   grid-template-columns: 1.3fr 0.7fr 1fr;
   gap: 8px;
 }
-
 .result-time {
   color: #666;
 }
 
 .result-temp {
   font-weight: 700;
+}
+
+/* Dark theme overrides */
+[data-theme="dark"] body,
+[data-theme="dark"] .main-content {
+  background: linear-gradient(135deg, #0b1220 0%, #101826 100%);
+}
+
+[data-theme="dark"] .content-area,
+[data-theme="dark"] .topNavBar,
+[data-theme="dark"] .cardDetails,
+[data-theme="dark"] .chanceOfRain,
+[data-theme="dark"] .globalMap,
+[data-theme="dark"] .citiesNearby {
+  background: #0f172a; /* slate-900 */
+  color: #e5e7eb; /* gray-200 */
+  border-color: #1f2937; /* gray-800 */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+}
+
+[data-theme="dark"] .content-area h2,
+[data-theme="dark"] .content-area p,
+[data-theme="dark"] .prev-search-time {
+  color: #cbd5e1; /* slate-300 */
+}
+
+[data-theme="dark"] .prev-search-item {
+  background: #0b1220;
+  border-color: #1f2937;
+  color: #e5e7eb;
+}
+
+[data-theme="dark"] .navbar .nav-item,
+[data-theme="dark"] .navSection,
+[data-theme="dark"] .navbar {
+  color: #e5e7eb;
+}
+
+[data-theme="dark"] .nav-item:hover,
+[data-theme="dark"] .nav-item:focus,
+[data-theme="dark"] .nav-item.active {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+[data-theme="dark"] .searchbar-error {
+  background: #3f1d1d;
+  color: #fecaca;
+  border-color: #7f1d1d;
+}
+
+[data-theme="dark"] .searchbar-result-item {
+  background: #0b1220;
+  border-color: #1f2937;
+  color: #e5e7eb;
 }

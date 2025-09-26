@@ -72,7 +72,6 @@
 }
 
 .day-card {
-  background: #ffffff;
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 12px;
