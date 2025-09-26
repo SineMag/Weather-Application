@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { FaUser } from "react-icons/fa";
 import "./App.css";
 import Navbar from "./components/Navbar";
 import MainSection from "./layout/MainSection";
@@ -9,11 +8,14 @@ import Snackbar from "./components/Snackbar";
 import Settings from "./layout/Settings";
 import Error404Page from "./layout/Error404Page";
 import Searchbar from "./components/Searchbar";
-import Profile from "./layout/Profile";
 import type { DailyPayload } from "./components/LocationPanel";
+import PreviousSearches from "./components/PreviousSearches";
+import sunnyVideo from "./assets/sunny.mp4";
+import windyVideo from "./assets/windy.mp4";
+import snowVideo from "./assets/snow.mp4";
  
 
-type NavItem = "home" | "location" | "map" | "notes" | "profile" | "settings";
+type NavItem = "home" | "location" | "map" | "notes" | "settings";
 
 function App() {
   // Minimal 404 handling: since we don't use a router, any non-root path is treated as 404
@@ -210,6 +212,18 @@ function App() {
             <MainSection>
               {daily && (
                 <div className={`weather-bg ${getBgClass(daily?.days?.[0]?.weather_text)}`}>
+                  {getBgClass(daily?.days?.[0]?.weather_text) === 'sunny' && (
+                    <video className="weather-video" autoPlay muted loop playsInline src={sunnyVideo} />
+                  )}
+                  {getBgClass(daily?.days?.[0]?.weather_text) === 'windy' && (
+                    <video className="weather-video" autoPlay muted loop playsInline src={windyVideo} />
+                  )}
+                  {getBgClass(daily?.days?.[0]?.weather_text) === 'snow' && (
+                    <video className="weather-video" autoPlay muted loop playsInline src={snowVideo} />
+                  )}
+                  {getBgClass(daily?.days?.[0]?.weather_text) === 'storm' && (
+                    <video className="weather-video" autoPlay muted loop playsInline src={windyVideo} />
+                  )}
                   {getAlert() && (
                     <div className="alert-wrapper">
                       <Snackbar message={getAlert()!.message} type={getAlert()!.type} />
@@ -238,6 +252,18 @@ function App() {
         return (
           <div className="location-content">
             <div className={`weather-bg ${getBgClass(daily?.days?.[0]?.weather_text)}`}>
+              {getBgClass(daily?.days?.[0]?.weather_text) === 'sunny' && (
+                <video className="weather-video" autoPlay muted loop playsInline src={sunnyVideo} />
+              )}
+              {getBgClass(daily?.days?.[0]?.weather_text) === 'windy' && (
+                <video className="weather-video" autoPlay muted loop playsInline src={windyVideo} />
+              )}
+              {getBgClass(daily?.days?.[0]?.weather_text) === 'snow' && (
+                <video className="weather-video" autoPlay muted loop playsInline src={snowVideo} />
+              )}
+              {getBgClass(daily?.days?.[0]?.weather_text) === 'storm' && (
+                <video className="weather-video" autoPlay muted loop playsInline src={windyVideo} />
+              )}
               {getAlert() && (
                 <div className="alert-wrapper">
                   <Snackbar message={getAlert()!.message} type={getAlert()!.type} />
@@ -270,18 +296,7 @@ function App() {
       case "notes":
         return (
           <div className="notes-content">
-            <h2>Weather Notes</h2>
-            <p>Your weather observations and notes will be shown here.</p>
-          </div>
-        );
-      case "profile":
-        return (
-          <div className="profile-content">
-            <Profile
-              unit={unit}
-              setUnit={setUnit}
-              onNotify={(msg, type = 'info') => { setToastType(type); setToastMessage(msg); }}
-            />
+            <PreviousSearches items={previous} onDelete={deleteSearch} onToggleFavorite={toggleFavorite} />
           </div>
         );
       case "settings":
@@ -314,19 +329,54 @@ function App() {
               <Searchbar
                 onDaily={async (payload) => {
                   setDaily(payload);
+                  // Auto-save/Upsert to previous searches
+                  try {
+                    const API = "http://localhost:3001/searches";
+                    const body = {
+                      city: payload?.city?.name,
+                      country: payload?.city?.country,
+                      timestamp: new Date().toISOString(),
+                      favorite: false,
+                      weather: payload?.days,
+                    } as any;
+                    if (!body.city) return;
+
+                    // Try to find an existing entry by city+country in local state
+                    const existing = previous.find(
+                      (s) => s.city === body.city && s.country === body.country
+                    );
+
+                    let saved: any = null;
+                    if (existing?.id) {
+                      const res = await fetch(`${API}/${existing.id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ timestamp: body.timestamp, weather: body.weather }),
+                      });
+                      saved = await res.json();
+                      if (!res.ok) throw new Error("Failed to patch");
+                    } else {
+                      const res = await fetch(API, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(body),
+                      });
+                      saved = await res.json();
+                      if (!res.ok) throw new Error("Failed to post");
+                    }
+
+                    // Update local list: move to top, unique by id
+                    setPrevious((p) => {
+                      const others = p.filter((x) => x.id !== saved.id);
+                      return [saved, ...others].slice(0, 20);
+                    });
+                  } catch {
+                    // ignore persistence errors, app still works
+                  }
                 }}
               />
             </div>
             <div className="topRightNav" style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "nowrap", position: 'relative' }}>
-              <div
-                className="topRightItem"
-                style={{ display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap", cursor: "pointer" }}
-                onClick={() => setCurrentSection('profile')}
-                aria-label="User profile"
-                title="User profile"
-              >
-                <FaUser size={20} />
-              </div>
             </div>
           </div>
           {/* Global snackbar */}
