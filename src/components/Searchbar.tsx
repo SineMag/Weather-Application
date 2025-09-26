@@ -41,7 +41,7 @@ export default function Searchbar({ onDaily }: SearchbarProps) {
   const [city, setCity] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<ForecastResponse | null>(null);
+  // Removed hourly feature; no local result state needed
 
   // Simple mapper for Open‑Meteo weather codes → short text
   const codeToText = (code?: number): string | undefined => {
@@ -81,7 +81,7 @@ export default function Searchbar({ onDaily }: SearchbarProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setResult(null);
+    // no-op
     // consumer (App) will control displayed results
 
     const query = city.trim();
@@ -152,7 +152,7 @@ export default function Searchbar({ onDaily }: SearchbarProps) {
         list,
       };
 
-      setResult(transformed);
+      // no-op
 
       // 🔹 2b) Fetch daily forecast: yesterday + next 7 days
       const dailyUrl =

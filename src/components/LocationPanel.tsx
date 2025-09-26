@@ -13,6 +13,8 @@ export type DailyPayload = {
   }>
 } | null
 
+// Minimal hourly forecast shape compatible with WeatherCard
+
 type SearchItem = {
   id?: number
   city?: string

@@ -9,10 +9,15 @@ import WeatherCard from "./components/WeatherCard";
 import LocationPanel from "./components/LocationPanel";
 import Snackbar from "./components/Snackbar";
 import Settings from "./layout/Settings";
+import Error404Page from "./layout/Error404Page";
 
 type NavItem = "home" | "location" | "map" | "notes" | "profile" | "settings";
 
 function App() {
+  // Minimal 404 handling: since we don't use a router, any non-root path is treated as 404
+  if (typeof window !== 'undefined' && window.location.pathname !== '/') {
+    return <Error404Page />;
+  }
   const [currentSection, setCurrentSection] = useState<NavItem>(() => {
     const stored = localStorage.getItem("activeSection");
     return (stored as NavItem) || "home";
