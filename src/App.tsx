@@ -230,14 +230,7 @@ function App() {
                 }}
               />
             </div>
-            <div className="topRightNav" style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "nowrap" }}>
-              <div className="topRightItem" style={{ display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap", cursor: "pointer" }}>
-                <FaLocationDot size={20} />
-              </div>
-              <div className="topRightItem" style={{ display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap", cursor: "pointer" }}>
-                <FaUser size={20} />
-              </div>
-            </div>
+          
           </div>
           {/* Global snackbar */}
           <div style={{ position: 'sticky', top: 16, zIndex: 10 }}>
