@@ -42,10 +42,59 @@ function App() {
     city?: string;
     country?: string;
     timestamp?: string;
+    favorite?: boolean;
+  };
+
+  // Clear all previous searches
+  const clearAllSearches = async () => {
+    try {
+      const API = "http://localhost:3001/searches";
+      const ids = previous.map((s) => s.id).filter(Boolean) as number[];
+      await Promise.all(ids.map((id) => fetch(`${API}/${id}`, { method: 'DELETE' })));
+      setPrevious([]);
+      setToastType('success');
+      setToastMessage('Cleared previous searches');
+    } catch {
+      setToastType('error');
+      setToastMessage('Failed to clear searches');
+    }
+  };
+
+  // Saved locations handlers
+  const addSavedLocation = (loc?: { city?: string; country?: string }) => {
+    if (!loc?.city) return;
+    setSaved((prev) => {
+      const next = [...prev.filter((s) => s.city !== loc.city || s.country !== loc.country), { city: loc.city, country: loc.country }];
+      localStorage.setItem('saved_locations', JSON.stringify(next));
+      setToastType('success');
+      setToastMessage('Saved location');
+      return next;
+    });
+  };
+
+  const removeSavedLocation = (loc?: { city?: string; country?: string }) => {
+    if (!loc?.city) return;
+    setSaved((prev) => {
+      const next = prev.filter((s) => !(s.city === loc.city && s.country === loc.country));
+      localStorage.setItem('saved_locations', JSON.stringify(next));
+      setToastType('info');
+      setToastMessage('Removed saved location');
+      return next;
+    });
   };
   const [previous, setPrevious] = useState<SearchItem[]>([]);
   const [toastMessage, setToastMessage] = useState<string>('');
   const [toastType, setToastType] = useState<'info' | 'warning' | 'error' | 'success'>('info');
+  // Saved locations (in localStorage only)
+  type SavedLocation = { city?: string; country?: string };
+  const [saved, setSaved] = useState<SavedLocation[]>(() => {
+    try {
+      const raw = localStorage.getItem('saved_locations');
+      return raw ? (JSON.parse(raw) as SavedLocation[]) : [];
+    } catch {
+      return [];
+    }
+  });
 
   // Converters and helpers
   const windDir = (deg?: number) => {
@@ -91,6 +140,42 @@ function App() {
       .catch(() => setPrevious([]));
   }, []);
 
+  // CRUD actions for previous searches
+  const deleteSearch = async (id?: number) => {
+    if (!id) return;
+    try {
+      const API = "http://localhost:3001/searches";
+      await fetch(`${API}/${id}`, { method: "DELETE" });
+      setPrevious((p) => p.filter((s) => s.id !== id));
+      setToastType('success');
+      setToastMessage('Removed from previous searches');
+    } catch (_) {
+      setToastType('error');
+      setToastMessage('Failed to remove search');
+    }
+  };
+
+  const toggleFavorite = async (item: SearchItem) => {
+    if (!item.id) return;
+    const next = !item.favorite;
+    try {
+      const API = "http://localhost:3001/searches";
+      const res = await fetch(`${API}/${item.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ favorite: next }),
+      });
+      if (res.ok) {
+        setPrevious((p) => p.map((s) => (s.id === item.id ? { ...s, favorite: next } : s)));
+        setToastType('success');
+        setToastMessage(next ? 'Marked as favorite' : 'Unmarked favorite');
+      }
+    } catch (_) {
+      setToastType('error');
+      setToastMessage('Failed to update favorite');
+    }
+  };
+
   const handleNavigation = (section: NavItem) => {
     setCurrentSection(section);
     console.log(`Navigated to: ${section}`);
@@ -130,6 +215,12 @@ function App() {
                     windDir={windDir}
                     convertPressure={convertPressure}
                     previous={previous}
+                    onDeleteSearch={deleteSearch}
+                    onToggleFavorite={toggleFavorite}
+                    onClearAll={clearAllSearches}
+                    saved={saved}
+                    onAddSaved={() => addSavedLocation(daily?.city)}
+                    onRemoveSaved={(loc) => removeSavedLocation(loc)}
                   />
                 </div>
               )}
@@ -154,6 +245,12 @@ function App() {
                 windDir={windDir}
                 convertPressure={convertPressure}
                 previous={previous}
+                onDeleteSearch={deleteSearch}
+                onToggleFavorite={toggleFavorite}
+                onClearAll={clearAllSearches}
+                saved={saved}
+                onAddSaved={() => addSavedLocation(daily?.city)}
+                onRemoveSaved={(loc) => removeSavedLocation(loc)}
               />
             </div>
           </div>
