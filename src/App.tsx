@@ -1,51 +1,111 @@
 import { useEffect, useState } from "react";
-import { FaLocationDot } from "react-icons/fa6";
-import { FaUser } from "react-icons/fa";
 import "./App.css";
 import Navbar from "./components/Navbar";
 import MainSection from "./layout/MainSection";
-import Searchbar from "./components/Searchbar";
 import WeatherCard from "./components/WeatherCard";
 import LocationPanel from "./components/LocationPanel";
 import Snackbar from "./components/Snackbar";
 import Settings from "./layout/Settings";
 import Error404Page from "./layout/Error404Page";
+import Searchbar from "./components/Searchbar";
+import type { DailyPayload } from "./components/LocationPanel";
+import PreviousSearches from "./components/PreviousSearches";
+import sunnyVideo from "./assets/sunny.mp4";
+import windyVideo from "./assets/windy.mp4";
+import snowVideo from "./assets/snow.mp4";
+ 
 
-type NavItem = "home" | "location" | "map" | "notes" | "profile" | "settings";
+type NavItem = "home" | "location" | "map" | "notes" | "settings";
 
 function App() {
   // Minimal 404 handling: since we don't use a router, any non-root path is treated as 404
-  if (typeof window !== 'undefined' && window.location.pathname !== '/') {
-    return <Error404Page />;
-  }
-  const [currentSection, setCurrentSection] = useState<NavItem>(() => {
-    const stored = localStorage.getItem("activeSection");
-    return (stored as NavItem) || "home";
-  });
-
-  // Lifted weather state
-  const [unit, setUnit] = useState<"metric" | "imperial">("metric");
-  const [daily, setDaily] = useState<{
-    city?: { name?: string; country?: string };
-    days?: Array<{
-      date?: string;
-      temp_min?: number;
-      temp_max?: number;
-      humidity_mean?: number;
-      wind_speed_max?: number;
-      wind_dir?: number;
-      weather_text?: string;
-    }>;
-  } | null>(null);
+  // Define types and initialize core state
   type SearchItem = {
     id?: number;
     city?: string;
     country?: string;
     timestamp?: string;
+    favorite?: boolean;
+    weather?: any;
   };
+
+  const [unit, setUnit] = useState<'metric' | 'imperial'>('metric');
+  const [currentSection, setCurrentSection] = useState<NavItem>((localStorage.getItem('activeSection') as NavItem) || 'home');
+  const [daily, setDaily] = useState<DailyPayload>(null);
+  
+
+  // Helper: add from current daily payload
+  const addSavedLocationFromDaily = async () => {
+    const city = daily?.city?.name;
+    const country = daily?.city?.country;
+    if (!city) {
+      setToastType('warning');
+      setToastMessage('No current location to save');
+      return;
+    }
+    try {
+      // Save a snapshot in json-server (searches)
+      const API = "http://localhost:3001/searches";
+      const body = {
+        city,
+        country,
+        timestamp: new Date().toISOString(),
+        favorite: false,
+        weather: daily?.days || [],
+      };
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const saved = await res.json();
+      if (res.ok) {
+        // reflect in savedEntries (menu list)
+        setSavedEntries((prev) => [saved, ...prev]);
+        // also reflect in `previous` because the menu prefers this list
+        setPrevious((p) => [saved, ...p]);
+        // refresh from server to stay consistent
+        try { await refreshSavedEntries(); } catch {}
+        setToastType('success');
+        setToastMessage('Saved current location');
+      } else {
+        throw new Error('Failed to save');
+      }
+    } catch (e) {
+      setToastType('error');
+      setToastMessage('Failed to save current location');
+    }
+  };
+
+  // Clear all previous searches
+  const clearAllSearches = async () => {
+    try {
+      const API = "http://localhost:3001/searches";
+      const ids = previous.map((s) => s.id).filter(Boolean) as number[];
+      await Promise.all(ids.map((id) => fetch(`${API}/${id}`, { method: 'DELETE' })));
+      setPrevious([]);
+      setToastType('success');
+      setToastMessage('Cleared previous searches');
+    } catch {
+      setToastType('error');
+      setToastMessage('Failed to clear searches');
+    }
+  };
+
+  
   const [previous, setPrevious] = useState<SearchItem[]>([]);
   const [toastMessage, setToastMessage] = useState<string>('');
   const [toastType, setToastType] = useState<'info' | 'warning' | 'error' | 'success'>('info');
+  // Saved locations (in localStorage only)
+  type SavedLocation = { city?: string; country?: string };
+  const [saved, setSaved] = useState<SavedLocation[]>(() => {
+    try {
+      const raw = localStorage.getItem('saved_locations');
+      return raw ? (JSON.parse(raw) as SavedLocation[]) : [];
+    } catch {
+      return [];
+    }
+  });
 
   // Converters and helpers
   const windDir = (deg?: number) => {
@@ -91,6 +151,42 @@ function App() {
       .catch(() => setPrevious([]));
   }, []);
 
+  // CRUD actions for previous searches
+  const deleteSearch = async (id?: number) => {
+    if (!id) return;
+    try {
+      const API = "http://localhost:3001/searches";
+      await fetch(`${API}/${id}`, { method: "DELETE" });
+      setPrevious((p) => p.filter((s) => s.id !== id));
+      setToastType('success');
+      setToastMessage('Removed from previous searches');
+    } catch (_) {
+      setToastType('error');
+      setToastMessage('Failed to remove search');
+    }
+  };
+
+  const toggleFavorite = async (item: SearchItem) => {
+    if (!item.id) return;
+    const next = !item.favorite;
+    try {
+      const API = "http://localhost:3001/searches";
+      const res = await fetch(`${API}/${item.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ favorite: next }),
+      });
+      if (res.ok) {
+        setPrevious((p) => p.map((s) => (s.id === item.id ? { ...s, favorite: next } : s)));
+        setToastType('success');
+        setToastMessage(next ? 'Marked as favorite' : 'Unmarked favorite');
+      }
+    } catch (_) {
+      setToastType('error');
+      setToastMessage('Failed to update favorite');
+    }
+  };
+
   const handleNavigation = (section: NavItem) => {
     setCurrentSection(section);
     console.log(`Navigated to: ${section}`);
@@ -116,6 +212,18 @@ function App() {
             <MainSection>
               {daily && (
                 <div className={`weather-bg ${getBgClass(daily?.days?.[0]?.weather_text)}`}>
+                  {getBgClass(daily?.days?.[0]?.weather_text) === 'sunny' && (
+                    <video className="weather-video" autoPlay muted loop playsInline src={sunnyVideo} />
+                  )}
+                  {getBgClass(daily?.days?.[0]?.weather_text) === 'windy' && (
+                    <video className="weather-video" autoPlay muted loop playsInline src={windyVideo} />
+                  )}
+                  {getBgClass(daily?.days?.[0]?.weather_text) === 'snow' && (
+                    <video className="weather-video" autoPlay muted loop playsInline src={snowVideo} />
+                  )}
+                  {getBgClass(daily?.days?.[0]?.weather_text) === 'storm' && (
+                    <video className="weather-video" autoPlay muted loop playsInline src={windyVideo} />
+                  )}
                   {getAlert() && (
                     <div className="alert-wrapper">
                       <Snackbar message={getAlert()!.message} type={getAlert()!.type} />
@@ -130,6 +238,10 @@ function App() {
                     windDir={windDir}
                     convertPressure={convertPressure}
                     previous={previous}
+                    onDeleteSearch={deleteSearch}
+                    onToggleFavorite={toggleFavorite}
+                    onClearAll={clearAllSearches}
+                    showPrevious={false}
                   />
                 </div>
               )}
@@ -140,6 +252,18 @@ function App() {
         return (
           <div className="location-content">
             <div className={`weather-bg ${getBgClass(daily?.days?.[0]?.weather_text)}`}>
+              {getBgClass(daily?.days?.[0]?.weather_text) === 'sunny' && (
+                <video className="weather-video" autoPlay muted loop playsInline src={sunnyVideo} />
+              )}
+              {getBgClass(daily?.days?.[0]?.weather_text) === 'windy' && (
+                <video className="weather-video" autoPlay muted loop playsInline src={windyVideo} />
+              )}
+              {getBgClass(daily?.days?.[0]?.weather_text) === 'snow' && (
+                <video className="weather-video" autoPlay muted loop playsInline src={snowVideo} />
+              )}
+              {getBgClass(daily?.days?.[0]?.weather_text) === 'storm' && (
+                <video className="weather-video" autoPlay muted loop playsInline src={windyVideo} />
+              )}
               {getAlert() && (
                 <div className="alert-wrapper">
                   <Snackbar message={getAlert()!.message} type={getAlert()!.type} />
@@ -154,6 +278,10 @@ function App() {
                 windDir={windDir}
                 convertPressure={convertPressure}
                 previous={previous}
+                onDeleteSearch={deleteSearch}
+                onToggleFavorite={toggleFavorite}
+                onClearAll={clearAllSearches}
+                showPrevious={false}
               />
             </div>
           </div>
@@ -168,15 +296,7 @@ function App() {
       case "notes":
         return (
           <div className="notes-content">
-            <h2>Weather Notes</h2>
-            <p>Your weather observations and notes will be shown here.</p>
-          </div>
-        );
-      case "profile":
-        return (
-          <div className="profile-content">
-            <h2>User Profile</h2>
-            <p>Manage your profile settings and preferences.</p>
+            <PreviousSearches items={previous} onDelete={deleteSearch} onToggleFavorite={toggleFavorite} />
           </div>
         );
       case "settings":
@@ -209,28 +329,55 @@ function App() {
               <Searchbar
                 onDaily={async (payload) => {
                   setDaily(payload);
-                  // persist to json-server
+                  // Auto-save/Upsert to previous searches
                   try {
                     const API = "http://localhost:3001/searches";
                     const body = {
                       city: payload?.city?.name,
                       country: payload?.city?.country,
                       timestamp: new Date().toISOString(),
-                    };
-                    const res = await fetch(API, {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(body),
+                      favorite: false,
+                      weather: payload?.days,
+                    } as any;
+                    if (!body.city) return;
+
+                    // Try to find an existing entry by city+country in local state
+                    const existing = previous.find(
+                      (s) => s.city === body.city && s.country === body.country
+                    );
+
+                    let saved: any = null;
+                    if (existing?.id) {
+                      const res = await fetch(`${API}/${existing.id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ timestamp: body.timestamp, weather: body.weather }),
+                      });
+                      saved = await res.json();
+                      if (!res.ok) throw new Error("Failed to patch");
+                    } else {
+                      const res = await fetch(API, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(body),
+                      });
+                      saved = await res.json();
+                      if (!res.ok) throw new Error("Failed to post");
+                    }
+
+                    // Update local list: move to top, unique by id
+                    setPrevious((p) => {
+                      const others = p.filter((x) => x.id !== saved.id);
+                      return [saved, ...others].slice(0, 20);
                     });
-                    const saved = await res.json();
-                    if (res.ok) setPrevious((p) => [saved, ...p].slice(0, 20));
-                  } catch (_) {
-                    // ignore persistence errors
+                  } catch {
+                    // ignore persistence errors, app still works
                   }
                 }}
               />
             </div>
-          
+            <div className="topRightNav" style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "nowrap", position: 'relative' }}>
+            </div>
           </div>
           {/* Global snackbar */}
           <div style={{ position: 'sticky', top: 16, zIndex: 10 }}>

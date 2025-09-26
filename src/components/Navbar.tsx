@@ -1,13 +1,11 @@
 import { useCallback } from "react";
 import { TiWeatherPartlySunny } from "react-icons/ti";
 import { TiHomeOutline } from "react-icons/ti";
-import { FaLocationDot } from "react-icons/fa6";
 import { CiMap } from "react-icons/ci";
 import { GrNotes } from "react-icons/gr";
-import { FaUserAlt } from "react-icons/fa";
 import { IoSettings } from "react-icons/io5";
 
-type NavItem = 'home' | 'location' | 'map' | 'notes' | 'profile' | 'settings';
+type NavItem = 'home' | 'location' | 'map' | 'notes' | 'settings';
 
 interface NavbarProps {
   activeItem: NavItem;
@@ -21,10 +19,8 @@ export default function Navbar({ activeItem, onNavigate }: NavbarProps) {
 
   const navItems = [
     { id: 'home' as NavItem, icon: TiHomeOutline, label: 'Home', section: 'mid' },
-    { id: 'location' as NavItem, icon: FaLocationDot, label: 'Current Location', section: 'mid' },
     { id: 'map' as NavItem, icon: CiMap, label: 'Weather Map', section: 'mid' },
     { id: 'notes' as NavItem, icon: GrNotes, label: 'Weather Notes', section: 'mid' },
-    { id: 'profile' as NavItem, icon: FaUserAlt, label: 'Profile', section: 'bottom' },
     { id: 'settings' as NavItem, icon: IoSettings, label: 'Settings', section: 'bottom' },
   ];
 
