@@ -91,29 +91,41 @@ export default function WeatherCard({
           </div>
         </div>
       )}
-
       {result && setUnit && convertTemp && convertSpeed && windDir && convertPressure && (
         <div>
           <h2>
             {result.city?.name}, {result.city?.country}
           </h2>
-          <button
-            onClick={() => setUnit(unit === "metric" ? "imperial" : "metric")}
-          >
-            Switch to {unit === "metric" ? "°F / km/h" : "°C / km/h"}
+          <button className='unit-toggle' onClick={() => setUnit(unit === 'metric' ? 'imperial' : 'metric')}>
+            Switch to {unit === 'metric' ? '°F / mph' : '°C / km/h'}
           </button>
 
-          <ul>
+          <div className='hourly-grid'>
             {result.list?.slice(0, 12).map((item, idx) => (
-              <li key={idx}>
-                <strong>{item.dt_txt}</strong> – {convertTemp(item.main?.temp)}{" "}
-                ({item.weather?.[0]?.description}) | Wind:{" "}
-                {convertSpeed(item.wind?.speed)} {windDir(item.wind?.deg)} |
-                Pressure: {convertPressure(item.main?.pressure)} | Humidity:{" "}
-                {item.main?.humidity}%
-              </li>
+              <div key={idx} className='hour-card' aria-label={`Forecast for ${item.dt_txt}`}>
+                <div className='hour-time'>
+                  {item.dt_txt ? new Date(item.dt_txt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '-'}
+                </div>
+                <div className='hour-temp'>
+                  {convertTemp(item.main?.temp)}
+                </div>
+                <div className='hour-desc'>
+                  {item.weather?.[0]?.description || '—'}
+                </div>
+                <div className='hour-meta'>
+                  <div>
+                    <span className='badge'>Wind</span> {convertSpeed(item.wind?.speed)} {windDir(item.wind?.deg)}
+                  </div>
+                  <div>
+                    <span className='badge'>Pressure</span> {convertPressure(item.main?.pressure)}
+                  </div>
+                  <div>
+                    <span className='badge'>Humidity</span> {typeof item.main?.humidity === 'number' ? `${item.main?.humidity}%` : '—'}
+                  </div>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
     </div>
