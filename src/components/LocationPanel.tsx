@@ -25,6 +25,8 @@ type SearchItem = {
 
 type LocationPanelProps = {
   daily: DailyPayload
+  result?: any | null
+  viewMode?: 'daily' | 'hourly'
   unit: 'metric' | 'imperial'
   setUnit: (u: 'metric' | 'imperial') => void
   convertTemp: (t?: number) => string
@@ -34,12 +36,15 @@ type LocationPanelProps = {
   previous: SearchItem[]
   onDeleteSearch?: (id?: number) => void
   onToggleFavorite?: (item: SearchItem) => void
+  onSelectSaved?: (item: SearchItem) => void
   onClearAll?: () => void
   showPrevious?: boolean
 }
 
 export default function LocationPanel({
   daily,
+  result,
+  viewMode = 'daily',
   unit,
   setUnit,
   convertTemp,
@@ -49,24 +54,41 @@ export default function LocationPanel({
   previous,
   onDeleteSearch,
   onToggleFavorite,
+  onSelectSaved,
   onClearAll,
   showPrevious = true,
 }: LocationPanelProps) {
   return (
     <div>
       <h2>Current Location Weather</h2>
-      {daily ? (
-        <WeatherCard
-          daily={daily || undefined}
-          unit={unit}
-          setUnit={setUnit}
-          convertTemp={convertTemp}
-          convertSpeed={convertSpeed}
-          windDir={windDir}
-          convertPressure={convertPressure}
-        />
+      {viewMode === 'daily' ? (
+        daily ? (
+          <WeatherCard
+            daily={daily || undefined}
+            unit={unit}
+            setUnit={setUnit}
+            convertTemp={convertTemp}
+            convertSpeed={convertSpeed}
+            windDir={windDir}
+            convertPressure={convertPressure}
+          />
+        ) : (
+          <p>Search for a city to view location details.</p>
+        )
       ) : (
-        <p>Search for a city to view location details.</p>
+        result ? (
+          <WeatherCard
+            result={result || undefined}
+            unit={unit}
+            setUnit={setUnit}
+            convertTemp={convertTemp}
+            convertSpeed={convertSpeed}
+            windDir={windDir}
+            convertPressure={convertPressure}
+          />
+        ) : (
+          <p>Search for a city to view hourly forecast.</p>
+        )
       )}
 
       <div style={{ display: 'flex', gap: 8, marginTop: 12, marginBottom: 12 }}>
@@ -87,7 +109,14 @@ export default function LocationPanel({
               {previous.map((s) => (
                 <li key={s.id} className="prev-search-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <strong>{s.city}</strong>{s.country ? `, ${s.country}` : ''}
+                    <button
+                      type="button"
+                      onClick={() => onSelectSaved?.(s)}
+                      style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', fontWeight: 600 }}
+                      title="Load this location"
+                    >
+                      {s.city}
+                    </button>{s.country ? `, ${s.country}` : ''}
                     <span className="prev-search-time" style={{ marginLeft: 8 }}>
                       {s.timestamp ? new Date(s.timestamp).toLocaleString() : ''}
                     </span>
