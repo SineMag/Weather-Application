@@ -35,9 +35,10 @@ type DailyPayload = {
 
 type SearchbarProps = {
   onDaily?: (payload: DailyPayload) => void;
+  onHourly?: (payload: ForecastResponse) => void;
 };
 
-export default function Searchbar({ onDaily }: SearchbarProps) {
+export default function Searchbar({ onDaily, onHourly }: SearchbarProps) {
   const [city, setCity] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -152,7 +153,8 @@ export default function Searchbar({ onDaily }: SearchbarProps) {
         list,
       };
 
-      // no-op
+      // Emit hourly result to consumer
+      onHourly?.(transformed);
 
       // 🔹 2b) Fetch daily forecast: yesterday + next 7 days
       const dailyUrl =

@@ -67,7 +67,7 @@ export default function WeatherCard({
             {daily.city?.name}, {daily.city?.country}
           </h2>
           <button className='unit-toggle' onClick={() => setUnit(unit === 'metric' ? 'imperial' : 'metric')}>
-            Switch to {unit === 'metric' ? '°F / mph' : '°C / km/h'}
+            Switch to {unit === 'metric' ? '°F / km/h' : '°C / km/h'}
           </button>
 
           <div className='daily-grid'>
@@ -100,7 +100,7 @@ export default function WeatherCard({
           <button
             onClick={() => setUnit(unit === "metric" ? "imperial" : "metric")}
           >
-            Switch to {unit === "metric" ? "°F / mph" : "°C / km/h"}
+            Switch to {unit === "metric" ? "°F / km/h" : "°C / km/h"}
           </button>
 
           <ul>

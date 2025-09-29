@@ -13,9 +13,10 @@ type PreviousSearchesProps = {
   items: PreviousSearch[]
   onDelete?: (id?: number) => void
   onToggleFavorite?: (item: PreviousSearch) => void
+  onSelect?: (item: PreviousSearch) => void
 }
 
-export default function PreviousSearches({ items, onDelete, onToggleFavorite }: PreviousSearchesProps) {
+export default function PreviousSearches({ items, onDelete, onToggleFavorite, onSelect }: PreviousSearchesProps) {
   return (
     <div style={{ padding: 16 }}>
       <h2 style={{ marginBottom: 12 }}>Previous searches</h2>
@@ -24,7 +25,14 @@ export default function PreviousSearches({ items, onDelete, onToggleFavorite }: 
           {items.map((s) => (
             <li key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e5e7eb', borderRadius: 10, padding: '8px 12px', background: 'rgba(255,255,255,0.06)' }}>
               <div>
-                <strong>{s.city}</strong>{s.country ? `, ${s.country}` : ''}
+                <button
+                  type="button"
+                  onClick={() => onSelect?.(s)}
+                  style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', fontWeight: 600 }}
+                  title="Load this location"
+                >
+                  {s.city}
+                </button>{s.country ? `, ${s.country}` : ''}
                 <span style={{ marginLeft: 8, color: 'var(--muted)' }}>{s.timestamp ? new Date(s.timestamp).toLocaleString() : ''}</span>
               </div>
               <div style={{ display: 'inline-flex', gap: 8 }}>
