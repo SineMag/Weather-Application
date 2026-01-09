@@ -1,4 +1,5 @@
 import WeatherCard from './WeatherCard'
+import { FaStar, FaRegStar, FaTrash, FaSave } from 'react-icons/fa'
 
 export type DailyPayload = {
   city?: { name?: string; country?: string }
@@ -38,6 +39,7 @@ type LocationPanelProps = {
   onToggleFavorite?: (item: SearchItem) => void
   onSelectSaved?: (item: SearchItem) => void
   onClearAll?: () => void
+  onSaveCurrent?: () => void
   showPrevious?: boolean
 }
 
@@ -56,11 +58,35 @@ export default function LocationPanel({
   onToggleFavorite,
   onSelectSaved,
   onClearAll,
+  onSaveCurrent,
   showPrevious = true,
 }: LocationPanelProps) {
   return (
     <div>
-      <h2>Current Location Weather</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <h2>Current Location Weather</h2>
+        {daily?.city?.name && (
+          <button
+            type="button"
+            onClick={() => onSaveCurrent?.()}
+            style={{
+              padding: '8px 12px',
+              borderRadius: 8,
+              border: '1px solid #86efac',
+              background: '#dcfce7',
+              color: '#166534',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              fontWeight: 500,
+            }}
+            title="Save current location"
+          >
+            <FaSave size={14} /> Save Location
+          </button>
+        )}
+      </div>
       {viewMode === 'daily' ? (
         daily ? (
           <WeatherCard
@@ -118,7 +144,13 @@ export default function LocationPanel({
                       {s.city}
                     </button>{s.country ? `, ${s.country}` : ''}
                     <span className="prev-search-time" style={{ marginLeft: 8 }}>
-                      {s.timestamp ? new Date(s.timestamp).toLocaleString() : ''}
+                      {s.timestamp ? (() => {
+                        const date = new Date(s.timestamp);
+                        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                        const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                                       'July', 'August', 'September', 'October', 'November', 'December'];
+                        return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+                      })() : ''}
                     </span>
                   </div>
                   <div style={{ display: 'inline-flex', gap: 8 }}>
@@ -132,9 +164,12 @@ export default function LocationPanel({
                         border: '1px solid #e5e7eb',
                         background: s.favorite ? '#fde68a' : '#fff',
                         cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
                     >
-                      {s.favorite ? '★' : '☆'}
+                      {s.favorite ? <FaStar size={16} /> : <FaRegStar size={16} />}
                     </button>
                     <button
                       type="button"
@@ -147,9 +182,12 @@ export default function LocationPanel({
                         background: '#fee2e2',
                         color: '#7f1d1d',
                         cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
                       }}
                     >
-                      Delete
+                      <FaTrash size={14} /> Delete
                     </button>
                   </div>
                 </li>

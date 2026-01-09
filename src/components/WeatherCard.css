@@ -1,20 +1,10 @@
-:root {
-  --bg: #ffffff;
-  --text: #111111;
-  --muted: #555555;
-  --border: #e5e7eb; /* light gray */
-  --shadow: 0 6px 16px rgba(0,0,0,0.08);
-  --shadow-hover: 0 10px 24px rgba(0,0,0,0.12);
-}
-
 .weatherCard {
-  background: transparent;
+  background: var(--card-bg, #ffffff);
   color: var(--text);
   padding: 16px;
   border-radius: 16px;
-  /* Remove box shadow and border so the weather background shows through */
-  box-shadow: none;
-  border: none;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+  border: 1px solid var(--border, #e5e7eb);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
@@ -24,50 +14,12 @@
   position: relative;
   border-radius: 16px;
   overflow: hidden;
-  /* In weather background contexts, flip the palette to light text for contrast */
-  --text: #f9fafb;
-  --muted: rgba(255,255,255,0.85);
-  --border: rgba(255,255,255,0.35);
+  background: radial-gradient(circle at top left, rgba(255,255,255,0.85), transparent 55%),
+              radial-gradient(circle at bottom right, rgba(148, 163, 184, 0.25), transparent 55%);
 }
-.weather-bg::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  filter: saturate(1) brightness(0.9);
-}
-.weather-bg .weatherCard { position: relative; z-index: 1; background: transparent; }
-/* Subtle text shadow for readability over busy backgrounds */
-.weather-bg .weatherCard,
-.weather-bg .weatherCard *:not(button) {
-  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
-}
-
-.weather-bg.sunny::before { background: none; }
-.weather-bg.rain::before { background-image: url('../assets/rainy weather.webp'); }
-.weather-bg.snow::before { background-image: url('../assets/snow.gif'); }
-.weather-bg.windy::before { background: none; }
-.weather-bg.storm::before { background: none; }
-.weather-bg.cloudy::before { background-image: url('../assets/windy.gif'); }
-
-/* Background video support */
-.weather-bg .weather-video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 0;
-  filter: saturate(1) brightness(0.9);
-}
-
-/* Fine-tune filters per condition */
-.weather-bg.cloudy::before {
-  filter: saturate(0.5) brightness(0.85);
-}
-.weather-bg.storm .weather-video {
-  filter: brightness(0.6) contrast(1.15) saturate(1);
+.weather-bg .weatherCard {
+  position: relative;
+  z-index: 1;
 }
 
 .weatherCard h2 {
@@ -79,9 +31,9 @@
 
 .unit-toggle {
   appearance: none;
-  background: transparent;
-  color: var(--text);
-  border: 1px solid var(--border);
+  background: var(--button-bg, #4a90e2);
+  color: var(--button-text, #ffffff);
+  border: 1px solid var(--button-border, #3b82f6);
   padding: 8px 12px;
   border-radius: 10px;
   cursor: pointer;
@@ -90,8 +42,8 @@
 
 .unit-toggle:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-  background: rgba(255,255,255,0.08);
+  box-shadow: 0 6px 16px rgba(15,23,42,0.25);
+  background: var(--button-bg-hover, #2563eb);
 }
 
 .daily-grid {
@@ -103,10 +55,10 @@
 
 .day-card {
   color: var(--text);
-  border: none;
+  border: 1px solid var(--border, #e5e7eb);
   border-radius: 12px;
   padding: 16px;
-  box-shadow: none;
+  background: rgba(255,255,255,0.9);
 }
 
 .day-card .day-title {
@@ -141,11 +93,11 @@
 
 .hour-card {
   color: var(--text);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border, #e5e7eb);
   border-radius: 12px;
   padding: 14px;
-  background: rgba(0,0,0,0.08);
-  box-shadow: var(--shadow);
+  background: rgba(255,255,255,0.92);
+  box-shadow: 0 6px 16px rgba(15,23,42,0.12);
   transition: transform .15s ease, box-shadow .15s ease;
 }
 .hour-card:hover {

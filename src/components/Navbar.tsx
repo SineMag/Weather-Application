@@ -40,7 +40,7 @@ export default function Navbar({ activeItem, onNavigate }: NavbarProps) {
         }}
       >
         <TiWeatherPartlySunny size={58} />
-        <h3>Weather</h3>
+        <h3>Weather Services</h3>
       </div>
       
       <div className="midNav">

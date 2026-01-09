@@ -11,10 +11,10 @@ import Searchbar from "./components/Searchbar";
 import PreviousSearches from "./components/PreviousSearches";
 import type { DailyPayload } from "./components/LocationPanel";
 
-import sunnyVideo from "./assets/sunny.mp4";
-import windyVideo from "./assets/windy.mp4";
-import snowVideo from "./assets/snow.mp4";
-import rainyImage from "./assets/rainy weather.webp";
+import { MdWbSunny, MdCloud, MdThunderstorm, MdAcUnit, MdAir } from "react-icons/md";
+import { TbCloudRain } from "react-icons/tb";
+import { BsCloudRainHeavy } from "react-icons/bs";
+import { FaCloud, FaSun, FaWind, FaBolt } from "react-icons/fa";
 
 type NavItem = "home" | "location" | "map" | "notes" | "settings";
 
@@ -34,7 +34,25 @@ function App() {
   const [currentSection, setCurrentSection] = useState<NavItem>(
     (localStorage.getItem("activeSection") as NavItem) || "home"
   );
-  const [daily, setDaily] = useState<DailyPayload | null>(null);
+  const [daily, setDaily] = useState<DailyPayload | null>(() => {
+    // Try to load cached daily data on startup if offline (with expiration check)
+    try {
+      const cached = localStorage.getItem('cached_daily');
+      if (cached) {
+        const cacheData = JSON.parse(cached);
+        if (cacheData.expiresAt && Date.now() < cacheData.expiresAt) {
+          return cacheData.data;
+        } else if (!navigator.onLine && cacheData.data) {
+          // Use expired cache if offline (better than nothing)
+          return cacheData.data;
+        } else {
+          // Remove expired cache
+          localStorage.removeItem('cached_daily');
+        }
+      }
+    } catch {}
+    return null;
+  });
   type HourlyResult = { city?: { name?: string; country?: string }; list?: any[] } | null;
   const [hourly, setHourly] = useState<HourlyResult>(null);
   const [viewMode, setViewMode] = useState<'daily' | 'hourly'>(() =>
@@ -90,16 +108,66 @@ function App() {
   };
 
   const getAlert = useMemo(() => {
-    const t = (daily?.days?.[0]?.weather_text || "").toLowerCase();
-    if (!t) return undefined;
-    if (t.includes("thunder"))
-      return { type: "warning" as const, message: "Thunderstorm expected. Stay indoors and avoid open areas." };
-    if (t.includes("snow"))
-      return { type: "warning" as const, message: "Snow conditions expected. Drive carefully and dress warm." };
-    if (t.includes("rain") || t.includes("drizzle") || t.includes("shower"))
-      return { type: "info" as const, message: "Rainy conditions. Carry an umbrella." };
-    if (t.includes("wind"))
-      return { type: "info" as const, message: "Windy conditions. Secure loose items outdoors." };
+    if (!daily?.days || daily.days.length < 2) return undefined;
+    
+    const today = daily.days[0];
+    const tomorrow = daily.days[1];
+    const todayText = (today?.weather_text || "").toLowerCase();
+    const tomorrowText = (tomorrow?.weather_text || "").toLowerCase();
+    
+    // Check for severe weather today
+    if (todayText.includes("thunderstorm") || todayText.includes("thunder")) {
+      const tomorrowMsg = tomorrowText.includes("clear") || tomorrowText.includes("sunny") 
+        ? " Clear skies expected tomorrow." 
+        : "";
+      return { 
+        type: "warning" as const, 
+        message: `Severe weather approaching: ${today.weather_text || 'Thunderstorm'} today.${tomorrowMsg} Stay indoors and avoid open areas.` 
+      };
+    }
+    
+    if (todayText.includes("heavy snow") || todayText.includes("blizzard")) {
+      const tomorrowMsg = tomorrowText.includes("clear") || tomorrowText.includes("sunny")
+        ? " Sunny tomorrow."
+        : "";
+      return { 
+        type: "warning" as const, 
+        message: `Severe weather approaching: ${today.weather_text || 'Heavy snow'} today.${tomorrowMsg} Drive carefully and dress warm.` 
+      };
+    }
+    
+    if (todayText.includes("heavy rain") || todayText.includes("violent")) {
+      const tomorrowMsg = tomorrowText.includes("clear") || tomorrowText.includes("sunny")
+        ? " Sunny tomorrow."
+        : "";
+      return { 
+        type: "warning" as const, 
+        message: `Severe weather approaching: ${today.weather_text || 'Heavy rain'} today.${tomorrowMsg} Avoid travel if possible.` 
+      };
+    }
+    
+    // Check for weather improvements (positive alerts)
+    if ((todayText.includes("rain") || todayText.includes("cloud") || todayText.includes("snow")) && 
+        (tomorrowText.includes("clear") || tomorrowText.includes("sunny"))) {
+      return { 
+        type: "success" as const, 
+        message: `Good news! ${today.weather_text || 'Cloudy'} today, but sunny tomorrow.` 
+      };
+    }
+    
+    // General weather alerts
+    if (todayText.includes("rain") || todayText.includes("drizzle") || todayText.includes("shower")) {
+      return { type: "info" as const, message: `Rainy conditions today: ${today.weather_text || 'Rain'}. Carry an umbrella.` };
+    }
+    
+    if (todayText.includes("snow")) {
+      return { type: "info" as const, message: `Snow conditions today: ${today.weather_text || 'Snow'}. Drive carefully.` };
+    }
+    
+    if (todayText.includes("wind")) {
+      return { type: "info" as const, message: `Windy conditions today. Secure loose items outdoors.` };
+    }
+    
     return undefined;
   }, [daily]);
 
@@ -108,32 +176,67 @@ function App() {
     const enabled = localStorage.getItem('notifications_enabled') === 'true';
     if (!enabled || !getAlert) return;
     if (!('Notification' in window)) return;
+    
     try {
       if (Notification.permission === 'granted') {
-        new Notification('Weather Alert', { body: getAlert.message });
+        const notification = new Notification('Weather Services Alert', { 
+          body: getAlert.message,
+          icon: '/src/assets/favicon.ico',
+          tag: 'weather-alert',
+          requireInteraction: getAlert.type === 'warning'
+        });
+        
+        // Auto-close after 5 seconds for non-warning alerts
+        if (getAlert.type !== 'warning') {
+          setTimeout(() => notification.close(), 5000);
+        }
+      } else if (Notification.permission === 'default') {
+        // Request permission if not yet determined
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted' && getAlert) {
+            new Notification('Weather Services Alert', { 
+              body: getAlert.message,
+              icon: '/src/assets/favicon.ico'
+            });
+          }
+        });
       }
-    } catch {}
+    } catch (error) {
+      console.error('Notification error:', error);
+    }
   }, [getAlert]);
 
   // -------------------------
-  // Video Component
+  // Weather Icon Background Component
   // -------------------------
-  const WeatherVideo: React.FC<{ weatherText?: string }> = ({ weatherText }) => {
+  const WeatherIconBackground: React.FC<{ weatherText?: string }> = ({ weatherText }) => {
     const bgClass = getBgClass(weatherText);
+    const iconSize = 200;
+    const iconStyle: React.CSSProperties = {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      opacity: 0.15,
+      zIndex: 0,
+      pointerEvents: 'none',
+    };
+
     switch (bgClass) {
       case "sunny":
-        return <video className="weather-video" autoPlay muted loop playsInline preload="auto" src={sunnyVideo} />;
-      case "windy":
-        return <video className="weather-video" autoPlay muted loop playsInline preload="auto" poster={windyVideo} src={windyVideo} />;
-      case "snow":
-        return <video className="weather-video" autoPlay muted loop playsInline preload="auto" poster={snowVideo} src={snowVideo} />;
+        return <FaSun size={iconSize} style={{ ...iconStyle, color: '#FFA500' }} />;
+      case "cloudy":
+        return <FaCloud size={iconSize} style={{ ...iconStyle, color: '#708090' }} />;
       case "rain":
-        // Use image background for rainy condition
-        return <img className="weather-video" src={rainyImage} alt="Rainy background" />;
+        return <BsCloudRainHeavy size={iconSize} style={{ ...iconStyle, color: '#4682B4' }} />;
+      case "snow":
+        return <MdAcUnit size={iconSize} style={{ ...iconStyle, color: '#E0E0E0' }} />;
+      case "windy":
+        return <FaWind size={iconSize} style={{ ...iconStyle, color: '#87CEEB' }} />;
       case "storm":
-        return <video className="weather-video" autoPlay muted loop playsInline preload="auto" poster={windyVideo} src={windyVideo} />;
+        return <FaBolt size={iconSize} style={{ ...iconStyle, color: '#4B0082' }} />;
       default:
-        return null;
+        return <FaCloud size={iconSize} style={{ ...iconStyle, color: '#708090' }} />;
     }
   };
 
@@ -156,92 +259,141 @@ function App() {
   }, [previous]);
 
   useEffect(() => {
-    // Try to get user location on first mount
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const { latitude, longitude } = pos.coords;
-          // Reverse geocode to get city/country
-          const revUrl = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&language=en&format=json`;
-          const revRes = await fetch(revUrl);
-          const rev = await revRes.json();
-          const place = rev?.results?.[0];
-          const city = place?.name as string | undefined;
-          const country = place?.country as string | undefined;
+    // Try to get user location on first mount with proper permission handling
+    if (!navigator.geolocation) {
+      setToastType("warning");
+      setToastMessage("Geolocation is not supported by your browser");
+      return;
+    }
 
-          // Daily forecast: yesterday + next 7 days
-          const dailyUrl =
-            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
-            `&daily=temperature_2m_max,temperature_2m_min,relative_humidity_2m_mean,wind_speed_10m_max,wind_direction_10m_dominant,weather_code` +
-            `&forecast_days=7&past_days=1&timezone=auto&wind_speed_unit=ms`;
-          const dRes = await fetch(dailyUrl);
-          const d = await dRes.json();
-          if (!dRes.ok) throw new Error("Failed to fetch daily forecast");
-
-          const codeToText = (code?: number): string | undefined => {
-            const map: Record<number, string> = {
-              0: "Clear sky",
-              1: "Mainly clear",
-              2: "Partly cloudy",
-              3: "Overcast",
-              45: "Fog",
-              48: "Depositing rime fog",
-              51: "Light drizzle",
-              53: "Moderate drizzle",
-              55: "Dense drizzle",
-              56: "Light freezing drizzle",
-              57: "Dense freezing drizzle",
-              61: "Slight rain",
-              63: "Rain",
-              65: "Heavy rain",
-              66: "Light freezing rain",
-              67: "Heavy freezing rain",
-              71: "Slight snow",
-              73: "Snow",
-              75: "Heavy snow",
-              77: "Snow grains",
-              80: "Rain showers",
-              81: "Heavy rain showers",
-              82: "Violent rain showers",
-              85: "Snow showers",
-              86: "Heavy snow showers",
-              95: "Thunderstorm",
-              96: "Thunderstorm with hail",
-              99: "Thunderstorm with heavy hail",
-            };
-            return typeof code === "number" ? map[code] || "—" : undefined;
-          };
-
-          const dates: string[] = d?.daily?.time || [];
-          const tmax: number[] = d?.daily?.temperature_2m_max || [];
-          const tmin: number[] = d?.daily?.temperature_2m_min || [];
-          const rhm: number[] = d?.daily?.relative_humidity_2m_mean || [];
-          const wsMax: number[] = d?.daily?.wind_speed_10m_max || [];
-          const wdDom: number[] = d?.daily?.wind_direction_10m_dominant || [];
-          const wcode: number[] = d?.daily?.weather_code || [];
-
-          const days = dates.map((date: string, i: number) => ({
-            date,
-            temp_min: tmin[i],
-            temp_max: tmax[i],
-            humidity_mean: rhm[i],
-            wind_speed_max: wsMax[i],
-            wind_dir: wdDom[i],
-            weather_text: codeToText(wcode[i]),
-          }));
-
-          setDaily({ city: { name: city || "Your location", country }, days });
-          setCoords({ lat: latitude, lon: longitude, name: city || 'Your location', country });
-        } catch {
-          // noop
+    const fetchCurrentLocation = async () => {
+      try {
+        // Check if permission was previously denied
+        const permissionStatus = await navigator.permissions?.query({ name: 'geolocation' }).catch(() => null);
+        
+        if (permissionStatus?.state === 'denied') {
+          setToastType("warning");
+          setToastMessage("Location access denied. Please enable location in browser settings or search for a city.");
+          return;
         }
-      },
-      () => {
-        // user denied or failed; ignore silently
-      },
-      { enableHighAccuracy: false, timeout: 8000 }
-    );
+
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            try {
+              const { latitude, longitude } = pos.coords;
+              // Reverse geocode to get city/country
+              const revUrl = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&language=en&format=json`;
+              const revRes = await fetch(revUrl);
+              const rev = await revRes.json();
+              const place = rev?.results?.[0];
+              const city = place?.name as string | undefined;
+              const country = place?.country as string | undefined;
+
+              // Daily forecast: yesterday + next 7 days
+              const dailyUrl =
+                `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
+                `&daily=temperature_2m_max,temperature_2m_min,relative_humidity_2m_mean,wind_speed_10m_max,wind_direction_10m_dominant,weather_code` +
+                `&forecast_days=7&past_days=1&timezone=auto&wind_speed_unit=ms`;
+              const dRes = await fetch(dailyUrl);
+              const d = await dRes.json();
+              if (!dRes.ok) throw new Error("Failed to fetch daily forecast");
+
+              const codeToText = (code?: number): string | undefined => {
+                const map: Record<number, string> = {
+                  0: "Clear sky",
+                  1: "Mainly clear",
+                  2: "Partly cloudy",
+                  3: "Overcast",
+                  45: "Fog",
+                  48: "Depositing rime fog",
+                  51: "Light drizzle",
+                  53: "Moderate drizzle",
+                  55: "Dense drizzle",
+                  56: "Light freezing drizzle",
+                  57: "Dense freezing drizzle",
+                  61: "Slight rain",
+                  63: "Rain",
+                  65: "Heavy rain",
+                  66: "Light freezing rain",
+                  67: "Heavy freezing rain",
+                  71: "Slight snow",
+                  73: "Snow",
+                  75: "Heavy snow",
+                  77: "Snow grains",
+                  80: "Rain showers",
+                  81: "Heavy rain showers",
+                  82: "Violent rain showers",
+                  85: "Snow showers",
+                  86: "Heavy snow showers",
+                  95: "Thunderstorm",
+                  96: "Thunderstorm with hail",
+                  99: "Thunderstorm with heavy hail",
+                };
+                return typeof code === "number" ? map[code] || "—" : undefined;
+              };
+
+              const dates: string[] = d?.daily?.time || [];
+              const tmax: number[] = d?.daily?.temperature_2m_max || [];
+              const tmin: number[] = d?.daily?.temperature_2m_min || [];
+              const rhm: number[] = d?.daily?.relative_humidity_2m_mean || [];
+              const wsMax: number[] = d?.daily?.wind_speed_10m_max || [];
+              const wdDom: number[] = d?.daily?.wind_direction_10m_dominant || [];
+              const wcode: number[] = d?.daily?.weather_code || [];
+
+              const days = dates.map((date: string, i: number) => ({
+                date,
+                temp_min: tmin[i],
+                temp_max: tmax[i],
+                humidity_mean: rhm[i],
+                wind_speed_max: wsMax[i],
+                wind_dir: wdDom[i],
+                weather_text: codeToText(wcode[i]),
+              }));
+
+              const dailyData = { city: { name: city || "Your location", country }, days };
+              setDaily(dailyData);
+              setCoords({ lat: latitude, lon: longitude, name: city || 'Your location', country });
+              // Cache daily data for offline use with expiration (24 hours)
+              try {
+                const cacheData = {
+                  data: dailyData,
+                  timestamp: Date.now(),
+                  expiresAt: Date.now() + (24 * 60 * 60 * 1000) // 24 hours
+                };
+                localStorage.setItem('cached_daily', JSON.stringify(cacheData));
+              } catch {}
+              setToastType("success");
+              setToastMessage(`Location updated: ${city || 'Your location'}${country ? ', ' + country : ''}`);
+            } catch (error) {
+              setToastType("error");
+              setToastMessage("Failed to fetch weather for your location. Please try searching for a city.");
+            }
+          },
+          (error) => {
+            // Handle geolocation errors
+            if (error.code === error.PERMISSION_DENIED) {
+              setToastType("warning");
+              setToastMessage("Location permission denied. Please enable location access or search for a city.");
+            } else if (error.code === error.POSITION_UNAVAILABLE) {
+              setToastType("warning");
+              setToastMessage("Location information unavailable. Please search for a city.");
+            } else if (error.code === error.TIMEOUT) {
+              setToastType("warning");
+              setToastMessage("Location request timed out. Please try again or search for a city.");
+            } else {
+              setToastType("warning");
+              setToastMessage("Unable to get your location. Please search for a city.");
+            }
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+        );
+      } catch (error) {
+        setToastType("error");
+        setToastMessage("Error checking location permissions. Please search for a city.");
+      }
+    };
+
+    fetchCurrentLocation();
   }, []);
 
   // Load weather for a saved/clicked location
@@ -249,11 +401,26 @@ function App() {
     const name = (item.city || '').trim();
     if (!name) return;
     try {
-      // Geocode to get lat/lon
-      const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1&language=en&format=json`;
+      // Geocode to get lat/lon (prioritize South African results)
+      let geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=10&language=en&format=json`;
+      
+      // Check if it might be a South African city
+      const saCities = ['johannesburg', 'cape town', 'durban', 'pretoria', 'port elizabeth', 
+        'bloemfontein', 'nelspruit', 'kimberley', 'polokwane', 'rustenburg', 'witbank'];
+      if (saCities.some(city => name.toLowerCase().includes(city.toLowerCase()))) {
+        geoUrl += '&country_codes=ZA';
+      }
+      
       const geoRes = await fetch(geoUrl);
       const geo = await geoRes.json();
-      const place = geo?.results?.[0];
+      
+      // Prioritize South African results if available
+      let place = geo?.results?.[0];
+      if (geo?.results?.length > 1) {
+        const saResult = geo.results.find((r: any) => r.country_code === 'ZA');
+        if (saResult) place = saResult;
+      }
+      
       if (!place) throw new Error('Location not found');
       const { latitude, longitude, country } = place;
       setCoords({ lat: latitude, lon: longitude, name, country });
@@ -324,7 +491,17 @@ function App() {
         wind_dir: wdDom[i],
         weather_text: codeToText(wcode[i]),
       }));
-      setDaily({ city: { name, country }, days });
+      const dailyData = { city: { name, country }, days };
+      setDaily(dailyData);
+      // Cache daily data for offline use with expiration (24 hours)
+      try {
+        const cacheData = {
+          data: dailyData,
+          timestamp: Date.now(),
+          expiresAt: Date.now() + (24 * 60 * 60 * 1000) // 24 hours
+        };
+        localStorage.setItem('cached_daily', JSON.stringify(cacheData));
+      } catch {}
       setViewMode('daily');
       setCurrentSection('location');
       setToastType('success');
@@ -344,6 +521,7 @@ function App() {
     if (!daily?.city?.name) {
       setToastType("warning");
       setToastMessage("No current location to save");
+      setTimeout(() => setToastMessage(""), 2000);
       return;
     }
 
@@ -358,7 +536,8 @@ function App() {
 
     setPrevious((p) => [body, ...p.filter((x) => !(x.city === body.city && x.country === body.country))].slice(0, 20));
     setToastType("success");
-    setToastMessage("Saved current location");
+    setToastMessage(`Location saved: ${daily.city.name}${daily.city.country ? ', ' + daily.city.country : ''}`);
+    setTimeout(() => setToastMessage(""), 2000);
   };
 
   const clearAllSearches = async () => {
@@ -369,9 +548,11 @@ function App() {
 
   const deleteSearch = async (id?: number) => {
     if (!id) return;
+    const item = previous.find((s) => s.id === id);
     setPrevious((p) => p.filter((s) => s.id !== id));
     setToastType("success");
-    setToastMessage("Removed from previous searches");
+    setToastMessage(`Location deleted: ${item?.city || 'Location'}`);
+    setTimeout(() => setToastMessage(""), 2000);
   };
 
   const toggleFavorite = async (item: SearchItem) => {
@@ -393,7 +574,7 @@ function App() {
           <div className={`${currentSection}-content`}>
             {daily && (
               <div className={`weather-bg ${getBgClass(daily.days?.[0]?.weather_text)}`}>
-                <WeatherVideo weatherText={daily.days?.[0]?.weather_text} />
+                <WeatherIconBackground weatherText={daily.days?.[0]?.weather_text} />
                 {getAlert && <Snackbar message={getAlert.message} type={getAlert.type} />}
                 <LocationPanel
                   daily={daily}
@@ -410,6 +591,7 @@ function App() {
                   onToggleFavorite={toggleFavorite}
                   onSelectSaved={handleSelectSaved}
                   onClearAll={clearAllSearches}
+                  onSaveCurrent={addSavedLocationFromDaily}
                   showPrevious={false}
                 />
               </div>
@@ -520,7 +702,7 @@ function App() {
           </button>
         </div>
         <div style={{ position: "sticky", top: 16, zIndex: 10 }}>
-          <Snackbar message={toastMessage} type={toastType} autoHideMs={3000} />
+          <Snackbar message={toastMessage} type={toastType} autoHideMs={2000} />
         </div>
         <div className="content-area">{renderMainContent()}</div>
       </main>

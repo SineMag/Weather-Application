@@ -1,4 +1,5 @@
 import React from 'react'
+import { FaStar, FaRegStar, FaTrash } from 'react-icons/fa'
 
 export type PreviousSearch = {
   id?: number
@@ -24,48 +25,64 @@ export default function PreviousSearches({ items, onDelete, onToggleFavorite, on
         <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 10 }}>
           {items.map((s) => (
             <li key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #e5e7eb', borderRadius: 10, padding: '8px 12px', background: 'rgba(255,255,255,0.06)' }}>
-              <div>
-                <button
-                  type="button"
-                  onClick={() => onSelect?.(s)}
-                  style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', fontWeight: 600 }}
-                  title="Load this location"
-                >
-                  {s.city}
-                </button>{s.country ? `, ${s.country}` : ''}
-                <span style={{ marginLeft: 8, color: 'var(--muted)' }}>{s.timestamp ? new Date(s.timestamp).toLocaleString() : ''}</span>
-              </div>
-              <div style={{ display: 'inline-flex', gap: 8 }}>
-                <button
-                  type="button"
-                  title={s.favorite ? 'Unfavorite' : 'Mark favorite'}
-                  onClick={() => onToggleFavorite?.(s)}
-                  style={{
-                    padding: '6px 10px',
-                    borderRadius: 8,
-                    border: '1px solid #e5e7eb',
-                    background: s.favorite ? '#fde68a' : '#fff',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {s.favorite ? '★' : '☆'}
-                </button>
-                <button
-                  type="button"
-                  title="Delete"
-                  onClick={() => onDelete?.(s.id)}
-                  style={{
-                    padding: '6px 10px',
-                    borderRadius: 8,
-                    border: '1px solid #fca5a5',
-                    background: '#fee2e2',
-                    color: '#7f1d1d',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Delete
-                </button>
-              </div>
+              <>
+                <div>
+                  <button
+                    type="button"
+                    onClick={() => onSelect?.(s)}
+                    style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', fontWeight: 600, color: 'var(--text)' }}
+                    title="View this saved location"
+                  >
+                    {s.city}
+                  </button>{s.country ? `, ${s.country}` : ''}
+                  <span style={{ marginLeft: 8, color: 'var(--muted)' }}>
+                    {s.timestamp ? (() => {
+                      const date = new Date(s.timestamp);
+                      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                      const months = ['January', 'February', 'March', 'April', 'May', 'June', 
+                                     'July', 'August', 'September', 'October', 'November', 'December'];
+                      return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+                    })() : ''}
+                  </span>
+                </div>
+                <div style={{ display: 'inline-flex', gap: 8 }}>
+                  <button
+                    type="button"
+                    title={s.favorite ? 'Unfavorite' : 'Mark favorite'}
+                    onClick={() => onToggleFavorite?.(s)}
+                    style={{
+                      padding: '6px 10px',
+                      borderRadius: 8,
+                      border: '1px solid #e5e7eb',
+                      background: s.favorite ? '#fde68a' : '#fff',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {s.favorite ? <FaStar size={16} /> : <FaRegStar size={16} />}
+                  </button>
+                  <button
+                    type="button"
+                    title="Delete"
+                    onClick={() => onDelete?.(s.id)}
+                    style={{
+                      padding: '6px 10px',
+                      borderRadius: 8,
+                      border: '1px solid #fca5a5',
+                      background: '#fee2e2',
+                      color: '#7f1d1d',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    <FaTrash size={14} /> Delete
+                  </button>
+                </div>
+              </>
             </li>
           ))}
         </ul>
