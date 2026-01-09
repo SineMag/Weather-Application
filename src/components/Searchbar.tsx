@@ -98,30 +98,55 @@ export default function Searchbar({ onDaily, onHourly }: SearchbarProps) {
       let geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
         query
       )}&count=10&language=en&format=json`;
-      
+
       // If query contains "South Africa" or SA cities, prioritize ZA
-      if (query.toLowerCase().includes('south africa') || query.toLowerCase().includes('sa') || 
-          ['johannesburg', 'cape town', 'durban', 'pretoria', 'port elizabeth', 'bloemfontein', 
-           'nelspruit', 'kimberley', 'polokwane', 'rustenburg', 'witbank', 'mbombela',
-           'east london', 'springs', 'benoni', 'welkom', 'newcastle', 'krugersdorp',
-           'roodepoort', 'botshabelo', 'brakpan', 'richards bay', 'vereeniging', 'centurion'].some(
-          city => query.toLowerCase().includes(city.toLowerCase())
-        )) {
-        geoUrl += '&country_codes=ZA';
+      if (
+        query.toLowerCase().includes("south africa") ||
+        query.toLowerCase().includes("sa") ||
+        [
+          "johannesburg",
+          "cape town",
+          "durban",
+          "pretoria",
+          "port elizabeth",
+          "bloemfontein",
+          "nelspruit",
+          "kimberley",
+          "polokwane",
+          "rustenburg",
+          "witbank",
+          "mbombela",
+          "east london",
+          "springs",
+          "benoni",
+          "welkom",
+          "newcastle",
+          "krugersdorp",
+          "roodepoort",
+          "botshabelo",
+          "brakpan",
+          "richards bay",
+          "vereeniging",
+          "centurion",
+        ].some((city) => query.toLowerCase().includes(city.toLowerCase()))
+      ) {
+        geoUrl += "&country_codes=ZA";
       }
-      
+
       const geoRes = await fetch(geoUrl);
       const geo = await geoRes.json();
-      
+
       // Prioritize South African results if available
       let place = geo?.results?.[0];
       if (geo?.results?.length > 1) {
-        const saResult = geo.results.find((r: any) => r.country_code === 'ZA');
+        const saResult = geo.results.find((r: any) => r.country_code === "ZA");
         if (saResult) place = saResult;
       }
-      
+
       if (!place) {
-        throw new Error("City not found. Try another city name or include 'South Africa'.");
+        throw new Error(
+          "City not found. Try another city name or include 'South Africa'."
+        );
       }
 
       const { latitude, longitude, name, country } = place;
@@ -184,7 +209,8 @@ export default function Searchbar({ onDaily, onHourly }: SearchbarProps) {
       const dRes = await fetch(dailyUrl);
       const d = await dRes.json();
       if (!dRes.ok) {
-        const providerMsg = d?.reason || d?.error || "Open‑Meteo daily request failed";
+        const providerMsg =
+          d?.reason || d?.error || "Open‑Meteo daily request failed";
         throw new Error(`${providerMsg}: ${dRes.status}`);
       }
 
@@ -213,9 +239,9 @@ export default function Searchbar({ onDaily, onHourly }: SearchbarProps) {
         const cacheData = {
           data: dailyData,
           timestamp: Date.now(),
-          expiresAt: Date.now() + (24 * 60 * 60 * 1000) // 24 hours
+          expiresAt: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
         };
-        localStorage.setItem('cached_daily', JSON.stringify(cacheData));
+        localStorage.setItem("cached_daily", JSON.stringify(cacheData));
       } catch {}
     } catch (err: any) {
       setError(err?.message || "Failed to fetch weather");

@@ -1,6 +1,6 @@
 .weatherCard {
   background: var(--card-bg, #ffffff);
-  color: var(--text);
+  color: #111827;
   padding: 16px;
   border-radius: 16px;
   box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
@@ -14,8 +14,16 @@
   position: relative;
   border-radius: 16px;
   overflow: hidden;
-  background: radial-gradient(circle at top left, rgba(255,255,255,0.85), transparent 55%),
-              radial-gradient(circle at bottom right, rgba(148, 163, 184, 0.25), transparent 55%);
+  background: radial-gradient(
+      circle at top left,
+
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(148, 163, 184, 0.25),
+      transparent 55%
+    );
 }
 .weather-bg .weatherCard {
   position: relative;
@@ -26,7 +34,7 @@
   font-size: 1.25rem;
   font-weight: 700;
   margin-bottom: 8px;
-  color: var(--text);
+  color: #111827;
 }
 
 .unit-toggle {
@@ -37,12 +45,12 @@
   padding: 8px 12px;
   border-radius: 10px;
   cursor: pointer;
-  transition: transform .15s ease, box-shadow .15s ease, background .2s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s ease;
 }
 
 .unit-toggle:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(15,23,42,0.25);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.25);
   background: var(--button-bg-hover, #2563eb);
 }
 
@@ -54,11 +62,11 @@
 }
 
 .day-card {
-  color: var(--text);
+  color: #111827;
   border: 1px solid var(--border, #e5e7eb);
   border-radius: 12px;
   padding: 16px;
-  background: rgba(255,255,255,0.9);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .day-card .day-title {
@@ -92,13 +100,13 @@
 }
 
 .hour-card {
-  color: var(--text);
+  color: #111827;
   border: 1px solid var(--border, #e5e7eb);
   border-radius: 12px;
   padding: 14px;
-  background: rgba(255,255,255,0.92);
-  box-shadow: 0 6px 16px rgba(15,23,42,0.12);
-  transition: transform .15s ease, box-shadow .15s ease;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 .hour-card:hover {
   transform: translateY(-2px);
@@ -137,7 +145,7 @@
   border: 1px solid var(--border);
   border-radius: 999px;
   margin-right: 6px;
-  background: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 @media (max-width: 640px) {
@@ -159,7 +167,9 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
-  .hour-card { padding: 12px; }
+  .hour-card {
+    padding: 12px;
+  }
 }
 
 @media (min-width: 1200px) {
