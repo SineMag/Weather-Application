@@ -1,3 +1,7 @@
+<img src="https://socialify.git.ci/SineMag/Weather-Application/image?language=1&owner=1&name=1&stargazers=1&theme=Light" alt="Weather-Application" width="640" height="320" />
+
+-------
+
 # Weather Services
 
 A modern, feature-rich weather application built with React, TypeScript, and Vite. View your current location weather, search for specific locations, manage saved locations, and receive weather notifications.
@@ -23,7 +27,7 @@ Before you begin, ensure you have the following installed:
 1. **Clone the repository**
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/SineMag/Weather-Application.git
    cd Weather-Application
    ```
 
@@ -52,36 +56,19 @@ Before you begin, ensure you have the following installed:
 
 2. **Open your browser**
 
-   - The application will typically be available at `http://localhost:5173`
-   - Check the terminal output for the exact URL
+   - The application will typically be available at `http://localhost:517#`
 
 3. **Grant location permission**
    - When prompted, allow location access to view weather for your current location
    - If denied, you can still search for specific cities
 
-## Building for Production
-
-To create a production build:
-
-```bash
-npm run build
-```
-
-The optimized files will be in the `dist` directory.
-
-To preview the production build locally:
-
-```bash
-npm run preview
-```
 
 ## Usage
 
 ### Viewing Current Location Weather
 
-1. On first load, the app will request location permission
-2. If granted, your current location's weather will be displayed automatically
-3. You can refresh the page to update the weather data
+1. On first load, the app will search for user's location
+2. If successful, your current location's weather will be displayed automatically
 
 ### Searching for a Location
 
@@ -93,9 +80,8 @@ npm run preview
 
 1. **View Previous Searches**: Navigate to "Weather Notes" in the sidebar
 2. **Save Current Location**: Click the save button when viewing current location
-3. **Edit Location**: Click on any saved location to edit its name (coming soon)
 4. **Delete Location**: Click the delete button next to any saved location
-5. **Mark as Favorite**: Click the star icon to favorite/unfavorite a location
+5. **Click to View**: Click on the name of the location from the saved list to view it's weather conditions
 
 ### Theme Toggle
 
@@ -138,18 +124,11 @@ This application uses the [Open-Meteo API](https://open-meteo.com/) which provid
 ## Browser Support
 
 - Chrome (recommended)
-- Firefox
-- Safari
-- Edge
+- FireFox
 
 Note: Location services and notifications require HTTPS or localhost.
 
 ## Troubleshooting
-
-### Location not working
-
-- Ensure you've granted location permission in your browser settings
-- Make sure you're using HTTPS or localhost (required for geolocation API)
 
 ### Notifications not working
 
@@ -167,4 +146,6 @@ Note: Location services and notifications require HTTPS or localhost.
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## LicenseThis project is open source and available under the MIT License.
+## License
+
+This project is open source and available under the MIT License.
