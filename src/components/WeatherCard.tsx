@@ -1,5 +1,4 @@
-import React from 'react'
-import './WeatherCard.css'
+import "./WeatherCard.css";
 
 type ForecastItem = {
   dt?: number;
@@ -40,8 +39,8 @@ type DailyResponse = {
 type WeatherCardProps = {
   result?: ForecastResponse | null;
   daily?: DailyResponse | null;
-  unit?: 'metric' | 'imperial';
-  setUnit?: (u: 'metric' | 'imperial') => void;
+  unit?: "metric" | "imperial";
+  setUnit?: (u: "metric" | "imperial") => void;
   convertTemp?: (t?: number) => string;
   convertSpeed?: (s?: number) => string;
   windDir?: (deg?: number) => string | undefined;
@@ -51,7 +50,7 @@ type WeatherCardProps = {
 export default function WeatherCard({
   result,
   daily,
-  unit = 'metric',
+  unit = "metric",
   setUnit,
   convertTemp,
   convertSpeed,
@@ -59,37 +58,70 @@ export default function WeatherCard({
   convertPressure,
 }: WeatherCardProps) {
   return (
-    <div className='weatherCard'>
+    <div className="weatherCard">
       {/* Daily cards: show if provided */}
       {daily && setUnit && convertTemp && convertSpeed && windDir && (
         <div>
           <h2>
             {daily.city?.name}, {daily.city?.country}
           </h2>
-          <button className='unit-toggle' onClick={() => setUnit(unit === 'metric' ? 'imperial' : 'metric')}>
-            Switch to {unit === 'metric' ? '°F / km/h' : '°C / km/h'}
+          <button
+            className="unit-toggle"
+            onClick={() => setUnit(unit === "metric" ? "imperial" : "metric")}
+          >
+            Switch to {unit === "metric" ? "°F / km/h" : "°C / km/h"}
           </button>
 
-          <div className='daily-grid'>
+          <div className="daily-grid">
             {daily.days?.map((d, idx) => (
-              <div key={idx} className='day-card'>
-                <div className='day-title'>
-                  {d.date ? (() => {
-                    const date = new Date(d.date);
-                    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                    const months = ['January', 'February', 'March', 'April', 'May', 'June', 
-                                   'July', 'August', 'September', 'October', 'November', 'December'];
-                    return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
-                  })() : '-'}
+              <div key={idx} className="day-card">
+                <div className="day-title">
+                  {d.date
+                    ? (() => {
+                        const date = new Date(d.date);
+                        const days = [
+                          "Sunday",
+                          "Monday",
+                          "Tuesday",
+                          "Wednesday",
+                          "Thursday",
+                          "Friday",
+                          "Saturday",
+                        ];
+                        const months = [
+                          "January",
+                          "February",
+                          "March",
+                          "April",
+                          "May",
+                          "June",
+                          "July",
+                          "August",
+                          "September",
+                          "October",
+                          "November",
+                          "December",
+                        ];
+                        return `${days[date.getDay()]}, ${date.getDate()} ${
+                          months[date.getMonth()]
+                        } ${date.getFullYear()}`;
+                      })()
+                    : "-"}
                 </div>
-                <div className='temps'>
+                <div className="temps">
                   {convertTemp?.(d.temp_max)} / {convertTemp?.(d.temp_min)}
                 </div>
-                <div className='desc'>{d.weather_text || '-'}</div>
-                <div className='meta'>
-                  <div>Humidity: {typeof d.humidity_mean === 'number' ? `${d.humidity_mean}%` : '-'}</div>
+                <div className="desc">{d.weather_text || "-"}</div>
+                <div className="meta">
                   <div>
-                    Wind: {convertSpeed?.(d.wind_speed_max)} {windDir?.(d.wind_dir)}
+                    Humidity:{" "}
+                    {typeof d.humidity_mean === "number"
+                      ? `${d.humidity_mean}%`
+                      : "-"}
+                  </div>
+                  <div>
+                    Wind: {convertSpeed?.(d.wind_speed_max)}{" "}
+                    {windDir?.(d.wind_dir)}
                   </div>
                 </div>
               </div>
@@ -97,43 +129,65 @@ export default function WeatherCard({
           </div>
         </div>
       )}
-      {result && setUnit && convertTemp && convertSpeed && windDir && convertPressure && (
-        <div>
-          <h2>
-            {result.city?.name}, {result.city?.country}
-          </h2>
-          <button className='unit-toggle' onClick={() => setUnit(unit === 'metric' ? 'imperial' : 'metric')}>
-            Switch to {unit === 'metric' ? '°F / mph' : '°C / km/h'}
-          </button>
+      {result &&
+        setUnit &&
+        convertTemp &&
+        convertSpeed &&
+        windDir &&
+        convertPressure && (
+          <div>
+            <h2>
+              {result.city?.name}, {result.city?.country}
+            </h2>
+            <button
+              className="unit-toggle"
+              onClick={() => setUnit(unit === "metric" ? "imperial" : "metric")}
+            >
+              Switch to {unit === "metric" ? "°F / mph" : "°C / km/h"}
+            </button>
 
-          <div className='hourly-grid'>
-            {result.list?.slice(0, 12).map((item, idx) => (
-              <div key={idx} className='hour-card' aria-label={`Forecast for ${item.dt_txt}`}>
-                <div className='hour-time'>
-                  {item.dt_txt ? new Date(item.dt_txt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '-'}
-                </div>
-                <div className='hour-temp'>
-                  {convertTemp(item.main?.temp)}
-                </div>
-                <div className='hour-desc'>
-                  {item.weather?.[0]?.description || '—'}
-                </div>
-                <div className='hour-meta'>
-                  <div>
-                    <span className='badge'>Wind</span> {convertSpeed(item.wind?.speed)} {windDir(item.wind?.deg)}
+            <div className="hourly-grid">
+              {result.list?.slice(0, 12).map((item, idx) => (
+                <div
+                  key={idx}
+                  className="hour-card"
+                  aria-label={`Forecast for ${item.dt_txt}`}
+                >
+                  <div className="hour-time">
+                    {item.dt_txt
+                      ? new Date(item.dt_txt).toLocaleTimeString(undefined, {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "-"}
                   </div>
-                  <div>
-                    <span className='badge'>Pressure</span> {convertPressure(item.main?.pressure)}
+                  <div className="hour-temp">
+                    {convertTemp(item.main?.temp)}
                   </div>
-                  <div>
-                    <span className='badge'>Humidity</span> {typeof item.main?.humidity === 'number' ? `${item.main?.humidity}%` : '—'}
+                  <div className="hour-desc">
+                    {item.weather?.[0]?.description || "—"}
+                  </div>
+                  <div className="hour-meta">
+                    <div>
+                      <span className="badge">Wind</span>{" "}
+                      {convertSpeed(item.wind?.speed)} {windDir(item.wind?.deg)}
+                    </div>
+                    <div>
+                      <span className="badge">Pressure</span>{" "}
+                      {convertPressure(item.main?.pressure)}
+                    </div>
+                    <div>
+                      <span className="badge">Humidity</span>{" "}
+                      {typeof item.main?.humidity === "number"
+                        ? `${item.main?.humidity}%`
+                        : "—"}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
-  )
+  );
 }

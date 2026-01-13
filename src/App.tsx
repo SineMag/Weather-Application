@@ -1,8 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import "./App.css";
 import Navbar from "./components/Navbar";
-import MainSection from "./layout/MainSection";
-import WeatherCard from "./components/WeatherCard";
 import LocationPanel from "./components/LocationPanel";
 import Snackbar from "./components/Snackbar";
 import Settings from "./layout/Settings";
@@ -11,14 +9,7 @@ import Searchbar from "./components/Searchbar";
 import PreviousSearches from "./components/PreviousSearches";
 import type { DailyPayload } from "./components/LocationPanel";
 
-import {
-  MdWbSunny,
-  MdCloud,
-  MdThunderstorm,
-  MdAcUnit,
-  MdAir,
-} from "react-icons/md";
-import { TbCloudRain } from "react-icons/tb";
+import { MdAcUnit } from "react-icons/md";
 import { BsCloudRainHeavy } from "react-icons/bs";
 import { FaCloud, FaSun, FaWind, FaBolt } from "react-icons/fa";
 
@@ -32,8 +23,6 @@ type SearchItem = {
   favorite?: boolean;
   weather?: any;
 };
-
-type SavedLocation = { city?: string; country?: string };
 
 function App() {
   const [unit, setUnit] = useState<"metric" | "imperial">("metric");
@@ -85,14 +74,6 @@ function App() {
   const [toastType, setToastType] = useState<
     "info" | "warning" | "error" | "success"
   >("info");
-  const [saved, setSaved] = useState<SavedLocation[]>(() => {
-    try {
-      const raw = localStorage.getItem("saved_locations");
-      return raw ? (JSON.parse(raw) as SavedLocation[]) : [];
-    } catch {
-      return [];
-    }
-  });
 
   // -------------------------
   // Helpers
@@ -560,16 +541,6 @@ function App() {
     setTimeout(() => setToastMessage(""), 2000);
   };
 
-  const toggleFavorite = async (item: SearchItem) => {
-    if (!item.id) return;
-    const next = !item.favorite;
-    setPrevious((p) =>
-      p.map((s) => (s.id === item.id ? { ...s, favorite: next } : s))
-    );
-    setToastType("success");
-    setToastMessage(next ? "Marked as favorite" : "Unmarked favorite");
-  };
-
   // -------------------------
   // Render
   // -------------------------
@@ -603,7 +574,6 @@ function App() {
                   convertPressure={convertPressure}
                   previous={previous}
                   onDeleteSearch={deleteSearch}
-                  onToggleFavorite={toggleFavorite}
                   onSelectSaved={handleSelectSaved}
                   onClearAll={clearAllSearches}
                   onSaveCurrent={addSavedLocationFromDaily}
@@ -661,7 +631,6 @@ function App() {
           <PreviousSearches
             items={previous}
             onDelete={deleteSearch}
-            onToggleFavorite={toggleFavorite}
             onSelect={handleSelectSaved}
           />
         );

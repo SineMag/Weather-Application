@@ -36,7 +36,6 @@ type LocationPanelProps = {
   convertPressure: (p?: number) => string;
   previous: SearchItem[];
   onDeleteSearch?: (id?: number) => void;
-  onToggleFavorite?: (item: SearchItem) => void;
   onSelectSaved?: (item: SearchItem) => void;
   onClearAll?: () => void;
   onSaveCurrent?: () => void;
@@ -55,11 +54,10 @@ export default function LocationPanel({
   convertPressure,
   previous,
   onDeleteSearch,
-  onToggleFavorite,
   onSelectSaved,
   onClearAll,
   onSaveCurrent,
-  showPrevious = true,
+  showPrevious = false,
 }: LocationPanelProps) {
   return (
     <div>

@@ -1,4 +1,3 @@
-import React from "react";
 import { FaTrash } from "react-icons/fa";
 
 export type PreviousSearch = {
@@ -13,14 +12,12 @@ export type PreviousSearch = {
 type PreviousSearchesProps = {
   items: PreviousSearch[];
   onDelete?: (id?: number) => void;
-  onToggleFavorite?: (item: PreviousSearch) => void;
   onSelect?: (item: PreviousSearch) => void;
 };
 
 export default function PreviousSearches({
   items,
   onDelete,
-  onToggleFavorite,
   onSelect,
 }: PreviousSearchesProps) {
   return (
