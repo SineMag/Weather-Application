@@ -93,10 +93,25 @@
 
 /* Hourly layout */
 .hourly-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.hourly-date-separator {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text, #000000);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border, #e5e7eb);
+}
+
+.hourly-cards-row {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 16px;
-  margin-top: 16px;
 }
 
 .hour-card {
@@ -107,6 +122,25 @@
   background: rgba(255, 255, 255, 0.92);
   box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Dark theme overrides for hourly cards */
+[data-theme="dark"] .hour-card {
+  color: #000000;
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #444444;
+}
+
+[data-theme="dark"] .hour-time {
+  color: #333333;
+}
+
+[data-theme="dark"] .hour-desc {
+  color: #333333;
+}
+
+[data-theme="dark"] .hour-meta {
+  color: #333333;
 }
 .hour-card:hover {
   transform: translateY(-2px);

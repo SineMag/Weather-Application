@@ -17,15 +17,15 @@
 }
 
 [data-theme="dark"] {
-  --text: #e5e7eb;
-  --muted: #9ca3af;
-  --border: #4b5563;
-  --card-bg: #111827;
-  --button-bg: #4f46e5;
-  --button-bg-hover: #4338ca;
-  --button-text: #e5e7eb;
-  --tag-bg: #1e293b;
-  --tag-text: #bfdbfe;
+  --text: #ffffff;
+  --muted: #cccccc;
+  --border: #444444;
+  --card-bg: #2a2a2a;
+  --button-bg: #3a3a3a;
+  --button-bg-hover: #4a4a4a;
+  --button-text: #ffffff;
+  --tag-bg: #1a1a1a;
+  --tag-text: #87ceeb;
 }
 html,
 body,
@@ -40,7 +40,7 @@ body,
 }
 
 .navSection {
-  box-shadow: 1px 2px 3px 4px rgba(20, 20, 20, 0.4); 
+  box-shadow: 1px 2px 3px 4px rgba(20, 20, 20, 0.4);
   display: flex;
   width: 100%;
   height: 100%;
@@ -49,7 +49,7 @@ body,
   justify-content: space-around;
   align-items: center;
   border-radius: 15px;
-  background: #4A90E2;
+  background: #4a90e2;
   position: relative;
 }
 
@@ -126,7 +126,7 @@ body,
 }
 
 .nav-item.active::before {
-  content: '';
+  content: "";
   position: absolute;
   left: -15px;
   top: 50%;
@@ -155,13 +155,13 @@ body,
     width: 80px;
     min-width: 80px;
   }
-  
+
   .nav-item svg,
   .logo svg {
     width: 40px !important;
     height: 40px !important;
   }
-  
+
   .logo h3 {
     font-size: 12px;
   }
@@ -173,13 +173,13 @@ body,
     min-width: 72px;
     padding: 6px;
   }
-  
+
   .nav-item svg,
   .logo svg {
     width: 32px !important;
     height: 32px !important;
   }
-  
+
   .logo h3 {
     font-size: 10px;
   }
@@ -207,7 +207,7 @@ body,
   flex: 1;
   padding: 20px;
   overflow-y: auto;
-  background: #E3F2FD;
+  background: #e3f2fd;
   color: var(--text);
 }
 
@@ -217,7 +217,7 @@ body,
   align-items: center;
   margin-bottom: 30px;
   padding: 20px;
-  background: #FFFFFF;
+  background: #ffffff;
   border-radius: 15px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
@@ -324,22 +324,54 @@ body,
 /* Searchbar styles */
 .searchbar-wrapper {
   width: 100%;
+  flex: 1;
 }
 
 .searchbar-form {
   display: flex;
   gap: 10px;
   align-items: center;
+  width: 100%;
 }
 
+.searchbar {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid var(--border, #e5e7eb);
+  border-radius: 12px;
+  font-size: 16px;
+  background: var(--card-bg, #ffffff);
+  color: var(--text, #000000);
+  outline: none;
+  transition: all 0.2s ease;
+  min-height: 48px;
+}
+
+.searchbar::placeholder {
+  color: var(--muted, #6b7280);
+}
 
 .searchbar:focus {
-  border-color: #4A90E2;
-  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.25);
+  border-color: #87ceeb;
+  box-shadow: 0 0 0 3px rgba(135, 206, 235, 0.25);
 }
 
+.searchbar-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  background: var(--button-bg, #87ceeb);
+  color: var(--button-text, #000000);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 48px;
+  white-space: nowrap;
+}
 
 .searchbar-btn:hover {
+  background: var(--button-bg-hover, #5fa8d3);
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
@@ -347,6 +379,7 @@ body,
 .searchbar-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+  transform: none;
 }
 
 .searchbar-error {
@@ -438,22 +471,22 @@ button:disabled {
 [data-theme="dark"] .chanceOfRain,
 [data-theme="dark"] .globalMap,
 [data-theme="dark"] .citiesNearby {
-  background: #283593;
-  color: #e5e7eb;
-  border-color: #3949ab;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+  background: #2a2a2a;
+  color: #ffffff;
+  border-color: #444444;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
 }
 
 [data-theme="dark"] .content-area h2,
 [data-theme="dark"] .content-area p,
 [data-theme="dark"] .prev-search-time {
-  color: #cbd5e1; /* slate-300 */
+  color: #ffffff;
 }
 
 [data-theme="dark"] .prev-search-item {
-  background: #0b1220;
-  border-color: #1f2937;
-  color: #e5e7eb;
+  background: #2a2a2a;
+  border-color: #444444;
+  color: #ffffff;
 }
 
 [data-theme="dark"] .navbar .nav-item,
@@ -476,7 +509,7 @@ button:disabled {
 }
 
 [data-theme="dark"] .searchbar-result-item {
-  background: #0b1220;
-  border-color: #1f2937;
-  color: #e5e7eb;
+  background: var(--card-bg, #1a1a1a);
+  border-color: var(--border, #444444);
+  color: var(--text, #ffffff);
 }

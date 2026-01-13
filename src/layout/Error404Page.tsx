@@ -28,7 +28,7 @@ export default function Error404Page() {
             href="/"
             style={{
               display: "inline-block",
-              background: "#667eea",
+              background: "#4a4a4a",
               color: "white",
               textDecoration: "none",
               padding: "10px 16px",

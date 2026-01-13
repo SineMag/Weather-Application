@@ -424,20 +424,18 @@ function App() {
       const wc: number[] = h?.hourly?.weather_code || [];
 
       const entries = times.map((t, i) => ({ t, i }));
-      const list = entries
-        .filter(({ i }) => i % 2 === 0)
-        .map(({ t, i }) => ({
-          dt: Math.floor(new Date(t).getTime() / 1000),
-          dt_txt: t,
-          main: {
-            temp: temp[i],
-            feels_like: feels[i],
-            pressure: p[i],
-            humidity: rh[i],
-          },
-          wind: { speed: ws[i], deg: wd[i] },
-          weather: [{ description: codeToText(wc[i]) }],
-        }));
+      const list = entries.map(({ t, i }) => ({
+        dt: Math.floor(new Date(t).getTime() / 1000),
+        dt_txt: t,
+        main: {
+          temp: temp[i],
+          feels_like: feels[i],
+          pressure: p[i],
+          humidity: rh[i],
+        },
+        wind: { speed: ws[i], deg: wd[i] },
+        weather: [{ description: codeToText(wc[i]) }],
+      }));
       setHourly({ city: { name, country }, list } as any);
 
       // Daily

@@ -1,47 +1,53 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-type Theme = 'light' | 'dark';
+type Theme = "light" | "dark";
 
-const THEME_KEY = 'app_theme';
-const NOTIFS_KEY = 'notifications_enabled';
-const OFFLINE_KEY = 'offline_enabled';
+const THEME_KEY = "app_theme";
+const NOTIFS_KEY = "notifications_enabled";
+const OFFLINE_KEY = "offline_enabled";
 
 async function registerSW() {
-  if ('serviceWorker' in navigator) {
+  if ("serviceWorker" in navigator) {
     try {
-      await navigator.serviceWorker.register('/sw.js');
+      await navigator.serviceWorker.register("/sw.js");
       // console.log('Service Worker registered');
     } catch (e) {
-      console.error('SW registration failed', e);
+      console.error("SW registration failed", e);
     }
   }
 }
 
 async function unregisterSWAndClearCaches() {
-  if ('serviceWorker' in navigator) {
+  if ("serviceWorker" in navigator) {
     const regs = await navigator.serviceWorker.getRegistrations();
-    await Promise.all(regs.map(r => r.unregister()));
+    await Promise.all(regs.map((r) => r.unregister()));
   }
-  if ('caches' in window) {
+  if ("caches" in window) {
     const keys = await caches.keys();
-    await Promise.all(keys.map(k => caches.delete(k)));
+    await Promise.all(keys.map((k) => caches.delete(k)));
   }
 }
 
-type NotifyType = 'info' | 'warning' | 'error' | 'success';
+type NotifyType = "info" | "warning" | "error" | "success";
 interface SettingsProps {
   onNotify?: (message: string, type?: NotifyType) => void;
 }
 
 export default function Settings({ onNotify }: SettingsProps) {
-  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem(THEME_KEY) as Theme) || 'light');
-  const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(() => localStorage.getItem(NOTIFS_KEY) === 'true');
-  const [offlineEnabled, setOfflineEnabled] = useState<boolean>(() => localStorage.getItem(OFFLINE_KEY) === 'true');
-  const [notifStatus, setNotifStatus] = useState<string>('');
+  const [theme, setTheme] = useState<Theme>(
+    () => (localStorage.getItem(THEME_KEY) as Theme) || "light"
+  );
+  const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(
+    () => localStorage.getItem(NOTIFS_KEY) === "true"
+  );
+  const [offlineEnabled, setOfflineEnabled] = useState<boolean>(
+    () => localStorage.getItem(OFFLINE_KEY) === "true"
+  );
+  const [notifStatus, setNotifStatus] = useState<string>("");
 
   // Apply theme to document root
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
 
@@ -62,44 +68,47 @@ export default function Settings({ onNotify }: SettingsProps) {
   }, []);
 
   const handleToggleTheme = (checked: boolean) => {
-    setTheme(checked ? 'dark' : 'light');
-    onNotify?.(checked ? 'Dark theme enabled' : 'Light theme enabled', 'success');
+    setTheme(checked ? "dark" : "light");
+    onNotify?.(
+      checked ? "Dark theme enabled" : "Light theme enabled",
+      "success"
+    );
   };
 
   const handleToggleNotifications = async (checked: boolean) => {
     if (!checked) {
       setNotificationsEnabled(false);
-      setNotifStatus('Notifications disabled');
-      onNotify?.('Notifications turned off', 'info');
+      setNotifStatus("Notifications disabled");
+      onNotify?.("Notifications turned off", "info");
       return;
     }
-    if (!('Notification' in window)) {
-      setNotifStatus('Notifications not supported in this browser');
+    if (!("Notification" in window)) {
+      setNotifStatus("Notifications not supported in this browser");
       setNotificationsEnabled(false);
-      onNotify?.('Notifications not supported', 'error');
+      onNotify?.("Notifications not supported", "error");
       return;
     }
     try {
       const result = await Notification.requestPermission();
-      if (result === 'granted') {
+      if (result === "granted") {
         setNotificationsEnabled(true);
-        setNotifStatus('Notifications enabled');
-        onNotify?.('Notifications turned on', 'success');
+        setNotifStatus("Notifications enabled");
+        onNotify?.("Notifications turned on", "success");
         // Send a friendly test notification
         try {
-          new Notification('Weather App', {
-            body: 'Notifications are enabled. You will receive alerts when available.',
+          new Notification("Weather App", {
+            body: "Notifications are enabled. You will receive alerts when available.",
           });
         } catch {}
       } else {
         setNotificationsEnabled(false);
-        setNotifStatus('Permission denied');
-        onNotify?.('Notification permission denied', 'warning');
+        setNotifStatus("Permission denied");
+        onNotify?.("Notification permission denied", "warning");
       }
     } catch (e) {
       setNotificationsEnabled(false);
-      setNotifStatus('Permission request failed');
-      onNotify?.('Failed to enable notifications', 'error');
+      setNotifStatus("Permission request failed");
+      onNotify?.("Failed to enable notifications", "error");
     }
   };
 
@@ -107,11 +116,11 @@ export default function Settings({ onNotify }: SettingsProps) {
     if (checked) {
       await registerSW();
       setOfflineEnabled(true);
-      onNotify?.('Offline access enabled', 'success');
+      onNotify?.("Offline access enabled", "success");
     } else {
       await unregisterSWAndClearCaches();
       setOfflineEnabled(false);
-      onNotify?.('Offline access disabled', 'info');
+      onNotify?.("Offline access disabled", "info");
     }
   };
 
@@ -128,7 +137,7 @@ export default function Settings({ onNotify }: SettingsProps) {
         <label className="switch">
           <input
             type="checkbox"
-            checked={theme === 'dark'}
+            checked={theme === "dark"}
             onChange={(e) => handleToggleTheme(e.target.checked)}
             aria-label="Toggle dark theme"
           />
@@ -190,7 +199,7 @@ export default function Settings({ onNotify }: SettingsProps) {
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .2s; border-radius: 34px; }
         .slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px; background-color: white; transition: .2s; border-radius: 50%; }
-        input:checked + .slider { background-color: #667eea; }
+        input:checked + .slider { background-color: #4a4a4a; }
         input:checked + .slider:before { transform: translateX(24px); }
       `}</style>
     </section>

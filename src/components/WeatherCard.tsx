@@ -147,44 +147,80 @@ export default function WeatherCard({
             </button>
 
             <div className="hourly-grid">
-              {result.list?.slice(0, 12).map((item, idx) => (
-                <div
-                  key={idx}
-                  className="hour-card"
-                  aria-label={`Forecast for ${item.dt_txt}`}
-                >
-                  <div className="hour-time">
-                    {item.dt_txt
-                      ? new Date(item.dt_txt).toLocaleTimeString(undefined, {
-                          hour: "2-digit",
-                          minute: "2-digit",
+              {result.list
+                ?.reduce(
+                  (
+                    groups: Array<{ date: string; items: ForecastItem[] }>,
+                    item
+                  ) => {
+                    const itemDate = item.dt_txt
+                      ? new Date(item.dt_txt).toLocaleDateString(undefined, {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
                         })
-                      : "-"}
-                  </div>
-                  <div className="hour-temp">
-                    {convertTemp(item.main?.temp)}
-                  </div>
-                  <div className="hour-desc">
-                    {item.weather?.[0]?.description || "—"}
-                  </div>
-                  <div className="hour-meta">
-                    <div>
-                      <span className="badge">Wind</span>{" "}
-                      {convertSpeed(item.wind?.speed)} {windDir(item.wind?.deg)}
+                      : "Unknown";
+
+                    let group = groups.find((g) => g.date === itemDate);
+                    if (!group) {
+                      group = { date: itemDate, items: [] };
+                      groups.push(group);
+                    }
+                    group.items.push(item);
+                    return groups;
+                  },
+                  []
+                )
+                .map((group, groupIdx) => (
+                  <div key={groupIdx}>
+                    <h3 className="hourly-date-separator">{group.date}</h3>
+                    <div className="hourly-cards-row">
+                      {group.items.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className="hour-card"
+                          aria-label={`Forecast for ${item.dt_txt}`}
+                        >
+                          <div className="hour-time">
+                            {item.dt_txt
+                              ? new Date(item.dt_txt).toLocaleTimeString(
+                                  undefined,
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )
+                              : "-"}
+                          </div>
+                          <div className="hour-temp">
+                            {convertTemp(item.main?.temp)}
+                          </div>
+                          <div className="hour-desc">
+                            {item.weather?.[0]?.description || "—"}
+                          </div>
+                          <div className="hour-meta">
+                            <div>
+                              <span className="badge">Wind</span>{" "}
+                              {convertSpeed(item.wind?.speed)}{" "}
+                              {windDir(item.wind?.deg)}
+                            </div>
+                            <div>
+                              <span className="badge">Pressure</span>{" "}
+                              {convertPressure(item.main?.pressure)}
+                            </div>
+                            <div>
+                              <span className="badge">Humidity</span>{" "}
+                              {typeof item.main?.humidity === "number"
+                                ? `${item.main?.humidity}%`
+                                : "—"}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div>
-                      <span className="badge">Pressure</span>{" "}
-                      {convertPressure(item.main?.pressure)}
-                    </div>
-                    <div>
-                      <span className="badge">Humidity</span>{" "}
-                      {typeof item.main?.humidity === "number"
-                        ? `${item.main?.humidity}%`
-                        : "—"}
-                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         )}

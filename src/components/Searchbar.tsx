@@ -99,7 +99,6 @@ export default function Searchbar({ onDaily, onHourly }: SearchbarProps) {
         query
       )}&count=10&language=en&format=json`;
 
-      // If query contains "South Africa" or SA cities, prioritize ZA
       if (
         query.toLowerCase().includes("south africa") ||
         query.toLowerCase().includes("sa") ||
@@ -107,6 +106,7 @@ export default function Searchbar({ onDaily, onHourly }: SearchbarProps) {
           "johannesburg",
           "cape town",
           "durban",
+          "estcourt",
           "pretoria",
           "port elizabeth",
           "bloemfontein",
@@ -114,6 +114,7 @@ export default function Searchbar({ onDaily, onHourly }: SearchbarProps) {
           "kimberley",
           "polokwane",
           "rustenburg",
+          "mooi river",
           "witbank",
           "mbombela",
           "east london",
@@ -174,24 +175,22 @@ export default function Searchbar({ onDaily, onHourly }: SearchbarProps) {
       const wd: number[] = data?.hourly?.wind_direction_10m || [];
       const wc: number[] = data?.hourly?.weather_code || [];
 
-      // Downsample to every 2 hours by taking every 2nd index
+      // Process hourly data (show every hour)
       const entries = times.map((t, i) => ({ t, i }));
-      const list: ForecastItem[] = entries
-        .filter(({ i }) => i % 2 === 0)
-        .map(({ t, i }) => ({
-          dt: Math.floor(new Date(t).getTime() / 1000),
-          dt_txt: t,
-          main: {
-            temp: temp[i],
-            feels_like: feels[i],
-            temp_min: undefined,
-            temp_max: undefined,
-            pressure: p[i],
-            humidity: rh[i],
-          },
-          wind: { speed: ws[i], deg: wd[i] },
-          weather: [{ description: codeToText(wc[i]) }],
-        }));
+      const list: ForecastItem[] = entries.map(({ t, i }) => ({
+        dt: Math.floor(new Date(t).getTime() / 1000),
+        dt_txt: t,
+        main: {
+          temp: temp[i],
+          feels_like: feels[i],
+          temp_min: undefined,
+          temp_max: undefined,
+          pressure: p[i],
+          humidity: rh[i],
+        },
+        wind: { speed: ws[i], deg: wd[i] },
+        weather: [{ description: codeToText(wc[i]) }],
+      }));
 
       const transformed: ForecastResponse = {
         city: { name, country },
@@ -253,20 +252,29 @@ export default function Searchbar({ onDaily, onHourly }: SearchbarProps) {
   // local converters not needed here anymore; App handles display
 
   return (
-    <div className="topNavSection">
-      <form onSubmit={handleSubmit}>
+    <div className="topNavSection searchbar-wrapper">
+      <form onSubmit={handleSubmit} className="searchbar-form">
         <input
           type="text"
           placeholder="Search City"
           value={city}
           onChange={(e) => setCity(e.target.value)}
+          className="searchbar"
+          aria-label="Search city"
+          aria-invalid={error ? "true" : "false"}
+          autoComplete="off"
+          spellCheck={false}
         />
-        <button type="submit" disabled={loading}>
+        <button type="submit" disabled={loading} className="searchbar-btn">
           {loading ? "Searching…" : "Search"}
         </button>
       </form>
 
-      {error && <div role="alert">{error}</div>}
+      {error && (
+        <div role="alert" className="searchbar-error">
+          {error}
+        </div>
+      )}
     </div>
   );
 }
