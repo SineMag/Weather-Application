@@ -4,7 +4,7 @@
 
 # Weather Services
 
-A modern, feature-rich weather application built with React, TypeScript, and Vite. View your current location weather, search for specific locations, manage saved locations, and receive weather notifications.
+A modern, feature-rich weather application built with React, TypeScript, and Vite. View your desired locations, manage saved locations, and receive in-app weather alerts.
 
 ## Features
 
@@ -57,10 +57,6 @@ Before you begin, ensure you have the following installed:
 2. **Open your browser**
 
    - The application will typically be available at `http://localhost:517#`
-
-3. **Grant location permission**
-   - When prompted, allow location access to view weather for your current location
-   - If denied, you can still search for specific cities
 
 
 ## Usage
