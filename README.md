@@ -1,6 +1,6 @@
 <img src="https://socialify.git.ci/SineMag/Weather-Application/image?language=1&owner=1&name=1&stargazers=1&theme=Light" alt="Weather-Application" width="640" height="320" />
 
--------
+---
 
 # Weather Services
 
@@ -21,6 +21,19 @@ Before you begin, ensure you have the following installed:
 
 - [Node.js](https://nodejs.org/) (version 18 or higher)
 - [npm](https://www.npmjs.com/) (comes with Node.js) or [yarn](https://yarnpkg.com/)
+
+## Quick Start
+
+Get the application running in under a minute:
+
+```bash
+git clone https://github.com/SineMag/Weather-Application.git
+cd Weather-Application
+npm install
+npm run dev
+```
+
+Then open `http://localhost:5173` in your browser and grant location permission when prompted.
 
 ## Installation
 
@@ -56,12 +69,11 @@ Before you begin, ensure you have the following installed:
 
 2. **Open your browser**
 
-   - The application will typically be available at `http://localhost:517#`
+   - The application will typically be available at `http://localhost:5173`
 
 3. **Grant location permission**
    - When prompted, allow location access to view weather for your current location
    - If denied, you can still search for specific cities
-
 
 ## Usage
 
@@ -80,8 +92,8 @@ Before you begin, ensure you have the following installed:
 
 1. **View Previous Searches**: Navigate to "Weather Notes" in the sidebar
 2. **Save Current Location**: Click the save button when viewing current location
-4. **Delete Location**: Click the delete button next to any saved location
-5. **Click to View**: Click on the name of the location from the saved list to view it's weather conditions
+3. **Delete Location**: Click the delete button next to any saved location
+4. **Click to View**: Click on the name of the location from the saved list to view it's weather conditions
 
 ### Theme Toggle
 
@@ -108,6 +120,8 @@ Before you begin, ensure you have the following installed:
 - **React 19**: UI library
 - **TypeScript**: Type safety
 - **Vite**: Build tool and dev server
+- **Material-UI (MUI)**: React component library
+- **React Router**: Client-side routing
 - **React Icons**: Icon library
 - **Open-Meteo API**: Weather data provider
 - **Service Workers**: Offline support
