@@ -8,6 +8,7 @@ import Error404Page from "./layout/Error404Page";
 import Searchbar from "./components/Searchbar";
 import PreviousSearches from "./components/PreviousSearches";
 import type { DailyPayload } from "./components/LocationPanel";
+import { AppProvider, useApp } from "./hooks/useApp";
 
 import { MdAcUnit } from "react-icons/md";
 import { BsCloudRainHeavy } from "react-icons/bs";
@@ -24,8 +25,20 @@ type SearchItem = {
   weather?: any;
 };
 
-function App() {
-  const [unit, setUnit] = useState<"metric" | "imperial">("metric");
+function AppContent() {
+  const {
+    preferences,
+    updatePreferences,
+    saveLocation,
+    getSavedLocations,
+    deleteLocation,
+    saveWeatherSearch,
+    getWeatherSearches,
+    clearWeatherSearches,
+  } = useApp();
+  const [unit, setUnit] = useState<"metric" | "imperial">(
+    preferences?.unit || "metric"
+  );
   const [currentSection, setCurrentSection] = useState<NavItem>(
     (localStorage.getItem("activeSection") as NavItem) || "home"
   );
@@ -62,18 +75,47 @@ function App() {
     name?: string;
     country?: string;
   } | null>(null);
-  const [previous, setPrevious] = useState<SearchItem[]>(() => {
-    try {
-      const raw = localStorage.getItem("previous_searches");
-      return raw ? (JSON.parse(raw) as SearchItem[]) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [previous, setPrevious] = useState<SearchItem[]>([]);
   const [toastMessage, setToastMessage] = useState<string>("");
   const [toastType, setToastType] = useState<
     "info" | "warning" | "error" | "success"
   >("info");
+
+  // Load previous searches from Supabase on mount
+  useEffect(() => {
+    const loadPreviousSearches = async () => {
+      try {
+        const searches = await getWeatherSearches();
+        const formattedSearches = searches.map((search: any) => ({
+          id: parseInt(search.id.replace(/[^0-9]/g, "")) || Date.now(),
+          city: search.city,
+          country: search.country,
+          timestamp: search.created_at,
+          favorite: false,
+          weather: search.weather_data,
+        }));
+        setPrevious(formattedSearches);
+      } catch (error) {
+        console.error("Error loading previous searches:", error);
+        // Fallback to localStorage if Supabase fails
+        try {
+          const raw = localStorage.getItem("previous_searches");
+          setPrevious(raw ? (JSON.parse(raw) as SearchItem[]) : []);
+        } catch {
+          setPrevious([]);
+        }
+      }
+    };
+
+    loadPreviousSearches();
+  }, [getWeatherSearches]);
+
+  // Sync unit preference with Supabase
+  useEffect(() => {
+    if (preferences?.unit !== unit) {
+      updatePreferences({ unit });
+    }
+  }, [unit, preferences, updatePreferences]);
 
   // -------------------------
   // Helpers
@@ -525,9 +567,16 @@ function App() {
   };
 
   const clearAllSearches = async () => {
-    setPrevious([]);
-    setToastType("success");
-    setToastMessage("Cleared previous searches");
+    try {
+      await clearWeatherSearches();
+      setPrevious([]);
+      setToastType("success");
+      setToastMessage("Cleared previous searches");
+    } catch (error) {
+      console.error("Error clearing searches:", error);
+      setToastType("error");
+      setToastMessage("Failed to clear searches");
+    }
   };
 
   const deleteSearch = async (id?: number) => {
@@ -672,6 +721,19 @@ function App() {
                 weather: payload.days,
               };
 
+              // Save to Supabase
+              try {
+                await saveWeatherSearch({
+                  city: payload.city.name,
+                  country: payload.city.country,
+                  latitude: coords?.lat || 0,
+                  longitude: coords?.lon || 0,
+                  weather_data: payload.days,
+                });
+              } catch (error) {
+                console.error("Error saving search to Supabase:", error);
+              }
+
               setPrevious((p) =>
                 [
                   body,
@@ -708,6 +770,14 @@ function App() {
         <div className="content-area">{renderMainContent()}</div>
       </main>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AppProvider>
+      <AppContent />
+    </AppProvider>
   );
 }
 
