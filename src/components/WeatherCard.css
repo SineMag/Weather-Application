@@ -91,6 +91,137 @@
   color: var(--muted);
 }
 
+/* Today card special styling */
+.day-card.today-card {
+  border: 2px solid var(--button-bg, #4a90e2);
+  background: linear-gradient(
+    135deg,
+    rgba(74, 144, 226, 0.1),
+    rgba(255, 255, 255, 0.95)
+  );
+  box-shadow: 0 8px 24px rgba(74, 144, 226, 0.2);
+  transform: scale(1.05);
+}
+
+.day-card.today-card .today-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.day-card.today-card .today-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.day-card.today-card .today-text {
+  flex: 1;
+}
+
+.day-card.today-card .today-label {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--button-bg, #4a90e2);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.day-card.today-card .today-date {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.day-card.today-card .today-temps {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.day-card.today-card .today-desc {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+  text-transform: capitalize;
+}
+
+/* Selected card styling */
+.day-card.selected-card {
+  border: 2px solid var(--button-bg, #4a90e2);
+  background: linear-gradient(
+    135deg,
+    rgba(74, 144, 226, 0.1),
+    rgba(255, 255, 255, 0.95)
+  );
+  box-shadow: 0 8px 24px rgba(74, 144, 226, 0.2);
+  transform: scale(1.05);
+}
+
+.day-card.selected-card .selected-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.day-card.selected-card .selected-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.day-card.selected-card .selected-text {
+  flex: 1;
+}
+
+.day-card.selected-card .selected-label {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--button-bg, #4a90e2);
+  margin-bottom: 4px;
+  text-transform: capitalize;
+  letter-spacing: 0.5px;
+}
+
+.day-card.selected-card .selected-date {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.day-card.selected-card .selected-temps {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.day-card.selected-card .selected-desc {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+  text-transform: capitalize;
+}
+
+/* Make all cards clickable */
+.day-card {
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.day-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.15);
+}
+
 /* Hourly layout */
 .hourly-grid {
   display: flex;
@@ -145,6 +276,86 @@
 .hour-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-hover);
+}
+
+/* Selected hourly card styling */
+.hour-card.hour-selected-card {
+  border: 2px solid var(--button-bg, #4a90e2);
+  background: linear-gradient(
+    135deg,
+    rgba(74, 144, 226, 0.1),
+    rgba(255, 255, 255, 0.95)
+  );
+  box-shadow: 0 8px 24px rgba(74, 144, 226, 0.2);
+  transform: scale(1.05);
+}
+
+.hour-card.hour-selected-card .hour-selected-time {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--button-bg, #4a90e2);
+  margin-bottom: 8px;
+}
+
+.hour-card.hour-selected-card .hour-selected-temp {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.hour-card.hour-selected-card .hour-selected-desc {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+  text-transform: capitalize;
+}
+
+.hour-card.hour-selected-card .hour-meta {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Now (current time) card styling */
+.hour-card.hour-now-card {
+  border: 2px solid var(--button-bg, #4a90e2);
+  background: linear-gradient(
+    135deg,
+    rgba(74, 144, 226, 0.15),
+    rgba(255, 255, 255, 0.95)
+  );
+  box-shadow: 0 8px 24px rgba(74, 144, 226, 0.25);
+  transform: scale(1.08);
+}
+
+.hour-card.hour-now-card .hour-now-time {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--button-bg, #4a90e2);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.hour-card.hour-now-card .hour-now-temp {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.hour-card.hour-now-card .hour-now-desc {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+  text-transform: capitalize;
+}
+
+.hour-card.hour-now-card .hour-meta {
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .hour-time {
