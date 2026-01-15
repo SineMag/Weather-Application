@@ -29,9 +29,6 @@ function AppContent() {
   const {
     preferences,
     updatePreferences,
-    saveLocation,
-    getSavedLocations,
-    deleteLocation,
     saveWeatherSearch,
     getWeatherSearches,
     clearWeatherSearches,

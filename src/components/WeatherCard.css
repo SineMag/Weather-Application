@@ -258,20 +258,20 @@
 /* Dark theme overrides for hourly cards */
 [data-theme="dark"] .hour-card {
   color: #000000;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(30, 30, 30, 0.92);
   border-color: #444444;
 }
 
 [data-theme="dark"] .hour-time {
-  color: #333333;
+  color: #e0e0e0;
 }
 
 [data-theme="dark"] .hour-desc {
-  color: #333333;
+  color: #e0e0e0;
 }
 
 [data-theme="dark"] .hour-meta {
-  color: #333333;
+  color: #e0e0e0;
 }
 .hour-card:hover {
   transform: translateY(-2px);
@@ -356,6 +356,27 @@
 .hour-card.hour-now-card .hour-meta {
   font-size: 13px;
   font-weight: 500;
+}
+
+/* Weather icon for hourly cards */
+.hour-weather-icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+}
+
+.hour-weather-icon svg {
+  width: 32px;
+  height: 32px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+[data-theme="dark"] .hour-weather-icon svg {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
 }
 
 .hour-time {

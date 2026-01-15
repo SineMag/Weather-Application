@@ -443,6 +443,15 @@ export default function WeatherCard({
                             >
                               {item.weather?.[0]?.description || "—"}
                             </div>
+                            {/* Add weather icon for current hour */}
+                            {isNow && (
+                              <div className="hour-weather-icon">
+                                {getWeatherIcon(
+                                  item.weather?.[0]?.description,
+                                  32
+                                )}
+                              </div>
+                            )}
                             <div className="hour-meta">
                               <div>
                                 <span className="badge">Wind</span>{" "}
